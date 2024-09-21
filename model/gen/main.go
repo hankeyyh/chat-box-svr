@@ -13,6 +13,8 @@ import (
 type AiModelQuery interface {
 	// SELECT * FROM @@table WHERE name = @name
 	GetByName(name string) ([]gen.T, error)
+	// SELECT * FROM @@table
+	All() ([]gen.T, error)
 }
 
 type AppQuery interface {
@@ -46,9 +48,9 @@ func main() {
 	}
 
 	// fill data
-	if err = fillAiModel(gormdb); err != nil {
-		panic(err)
-	}
+	// if err = fillAiModel(gormdb); err != nil {
+	// 	panic(err)
+	// }
 }
 
 func createModelAndApi(db *gorm.DB, gen *gen.Generator, model model.BaseTable, fc interface{}) error {

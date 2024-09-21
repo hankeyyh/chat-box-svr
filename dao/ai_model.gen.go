@@ -170,6 +170,7 @@ type IAiModelDo interface {
 	schema.Tabler
 
 	GetByName(name string) (result []model.AiModel, err error)
+	All() (result []model.AiModel, err error)
 }
 
 // SELECT * FROM @@table WHERE name = @name
@@ -182,6 +183,18 @@ func (a aiModelDo) GetByName(name string) (result []model.AiModel, err error) {
 
 	var executeSQL *gorm.DB
 	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// SELECT * FROM @@table
+func (a aiModelDo) All() (result []model.AiModel, err error) {
+	var generateSQL strings.Builder
+	generateSQL.WriteString("SELECT * FROM ai_model ")
+
+	var executeSQL *gorm.DB
+	executeSQL = a.UnderlyingDB().Raw(generateSQL.String()).Find(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return
