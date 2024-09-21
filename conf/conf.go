@@ -4,6 +4,11 @@ import "github.com/BurntSushi/toml"
 
 type Conf struct {
 	MysqlConf mySqlConf `toml:"mysql"`
+	ServerConf serverConf `toml:"server"`
+}
+
+type serverConf struct {
+	Port int `toml:"port"`
 }
 
 type mySqlConf struct {
