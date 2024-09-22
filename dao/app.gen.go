@@ -181,6 +181,7 @@ type IAppDo interface {
 	GetByModelID(modelId int) (result []model.App, err error)
 	GetByAuthor(createdBy string) (result []model.App, err error)
 	AllPublic() (result []model.App, err error)
+	AllPrivateByAuthor(createdBy string) (result []model.App, err error)
 }
 
 // SELECT * FROM @@table WHERE name = @name
@@ -235,6 +236,21 @@ func (a appDo) AllPublic() (result []model.App, err error) {
 
 	var executeSQL *gorm.DB
 	executeSQL = a.UnderlyingDB().Raw(generateSQL.String()).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// SELECT * FROM @@table WHERE is_public = 0 AND created_by = @createdBy
+func (a appDo) AllPrivateByAuthor(createdBy string) (result []model.App, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, createdBy)
+	generateSQL.WriteString("SELECT * FROM app WHERE is_public = 0 AND created_by = ? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return

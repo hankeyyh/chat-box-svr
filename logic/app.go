@@ -1,27 +1,56 @@
 package logic
 
-import "net/http"
+import (
+	"net/http"
 
-func AppPublicList(http.ResponseWriter, *http.Request) {
-	
+	"github.com/hankeyyh/chat-box-svr/dao"
+)
+
+func AppPublicList(req *http.Request) (interface{}, *zerror) {
+	apps, err := dao.App.AllPublic()
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
+	return apps, nil
 }
 
-func AppPrivateList(http.ResponseWriter, *http.Request) {
-
+func AppPrivateList(req *http.Request) (interface{}, *zerror) {
+	err := req.ParseForm()
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
+	author := req.Form.Get("author")
+	if author == "" {
+		return nil, NewZError(-1, "author is required", nil)
+	}
+	// TODO validate string format
+	apps, err := dao.App.AllPrivateByAuthor(author)
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
+	return apps, nil
 }
 
-func AppDetail(http.ResponseWriter, *http.Request) {
-
+func AppDetail(req *http.Request) (interface{}, *zerror) {
+	return nil, nil
 }
 
-func AppUpsert(http.ResponseWriter, *http.Request) {
-
+func AppUpsert(req *http.Request) (interface{}, *zerror) {
+	return nil, nil
 }
 
-func AppRelease(http.ResponseWriter, *http.Request) {}
+func AppRelease(req *http.Request) (interface{}, *zerror) {
+	return nil, nil
+}
 
-func AppUnrelease(http.ResponseWriter, *http.Request) {}
+func AppUnrelease(req *http.Request) (interface{}, *zerror) {
+	return nil, nil
+}
 
-func AppChatList(http.ResponseWriter, *http.Request) {}
+func AppChatList(req *http.Request) (interface{}, *zerror) {
+	return nil, nil
+}
 
-func AppChat(http.ResponseWriter, *http.Request) {}
+func AppChat(req *http.Request) (interface{}, *zerror) {
+	return nil, nil
+}

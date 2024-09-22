@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 
 	"github.com/hankeyyh/chat-box-svr/conf"
@@ -26,9 +27,15 @@ type AppQuery interface {
 	GetByAuthor(createdBy string) ([]gen.T, error)
 	// SELECT * FROM @@table WHERE is_public = 1
 	AllPublic() ([]gen.T, error)
+	// SELECT * FROM @@table WHERE is_public = 0 AND created_by = @createdBy
+	AllPrivateByAuthor(createdBy string) ([]gen.T, error)
 }
 
+var initModelData = flag.Bool("init_model", false, "init model data")
+
 func main() {
+	flag.Parse()
+
 	mysqlConf := conf.DefaultConf.MysqlConf
 	gormdb, err := gorm.Open(mysql.Open(mysqlConf.GetDsn()))
 	if err != nil {
@@ -36,21 +43,23 @@ func main() {
 	}
 	g := gen.NewGenerator(gen.Config{
 		OutPath: "dao",
-		Mode: gen.WithoutContext|gen.WithDefaultQuery|gen.WithQueryInterface,
+		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 	})
 
 	// create table if table not exists
-	if err = createModelAndApi(gormdb, g, model.AiModel{}, func(AiModelQuery){}); err != nil {
+	if err = createModelAndApi(gormdb, g, model.AiModel{}, func(AiModelQuery) {}); err != nil {
 		panic(err)
 	}
-	if err = createModelAndApi(gormdb, g, model.App{}, func(AppQuery){}); err != nil {
+	if err = createModelAndApi(gormdb, g, model.App{}, func(AppQuery) {}); err != nil {
 		panic(err)
 	}
 
 	// fill data
-	// if err = fillAiModel(gormdb); err != nil {
-	// 	panic(err)
-	// }
+	if *initModelData {
+		if err = fillAiModel(gormdb); err != nil {
+			fmt.Printf("Fill ai_model failed: %v\n", err)
+		}
+	}
 }
 
 func createModelAndApi(db *gorm.DB, gen *gen.Generator, model model.BaseTable, fc interface{}) error {
