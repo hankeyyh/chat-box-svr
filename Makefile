@@ -2,17 +2,21 @@ dep: ## get dependices
 	@echo "go dep..."
 	@go mod tidy
 
-db: dep # create db
-	@echo "create db..."
-	@go run model/gen/main.go
+table: dep # create table
+	@echo "create table..."
+	@go run script/create_table/main.go
 
-db_force: dep # force create db
-	@echo "force create db..."
-	@go run model/gen/main.go --force
+table_force: dep # force create table
+	@echo "force create table..."
+	@go run script/create_table/main.go --force
+
+crud: dep # create crud
+	@echo "create crud..."
+	@go run script/create_crud/main.go
 
 init_model: dep # init model
 	@echo "init model..."
-	@go run model/gen/main.go --init_model
+	@go run script/init_model/main.go --table_name=all
 
 build: dep # build server
 	@echo "build server..."
