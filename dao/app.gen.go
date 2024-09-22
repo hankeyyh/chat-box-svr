@@ -33,6 +33,7 @@ func newApp(db *gorm.DB, opts ...gen.DOOption) app {
 	_app.Name = field.NewString(tableName, "name")
 	_app.CreatedBy = field.NewString(tableName, "created_by")
 	_app.Introduction = field.NewString(tableName, "introduction")
+	_app.Prompt = field.NewString(tableName, "prompt")
 	_app.IsPublic = field.NewInt8(tableName, "is_public")
 	_app.CreatedAt = field.NewTime(tableName, "created_at")
 	_app.UpdatedAt = field.NewTime(tableName, "updated_at")
@@ -51,6 +52,7 @@ type app struct {
 	Name         field.String
 	CreatedBy    field.String
 	Introduction field.String
+	Prompt       field.String
 	IsPublic     field.Int8
 	CreatedAt    field.Time
 	UpdatedAt    field.Time
@@ -75,6 +77,7 @@ func (a *app) updateTableName(table string) *app {
 	a.Name = field.NewString(table, "name")
 	a.CreatedBy = field.NewString(table, "created_by")
 	a.Introduction = field.NewString(table, "introduction")
+	a.Prompt = field.NewString(table, "prompt")
 	a.IsPublic = field.NewInt8(table, "is_public")
 	a.CreatedAt = field.NewTime(table, "created_at")
 	a.UpdatedAt = field.NewTime(table, "updated_at")
@@ -94,12 +97,13 @@ func (a *app) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (a *app) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 8)
+	a.fieldMap = make(map[string]field.Expr, 9)
 	a.fieldMap["id"] = a.Id
 	a.fieldMap["model_id"] = a.ModelId
 	a.fieldMap["name"] = a.Name
 	a.fieldMap["created_by"] = a.CreatedBy
 	a.fieldMap["introduction"] = a.Introduction
+	a.fieldMap["prompt"] = a.Prompt
 	a.fieldMap["is_public"] = a.IsPublic
 	a.fieldMap["created_at"] = a.CreatedAt
 	a.fieldMap["updated_at"] = a.UpdatedAt
@@ -179,6 +183,7 @@ type IAppDo interface {
 
 	GetByName(name string) (result []model.App, err error)
 	GetByModelID(modelId int) (result []model.App, err error)
+	GetByID(id int) (result []model.App, err error)
 	GetByAuthor(createdBy string) (result []model.App, err error)
 	AllPublic() (result []model.App, err error)
 	AllPrivateByAuthor(createdBy string) (result []model.App, err error)
@@ -206,6 +211,21 @@ func (a appDo) GetByModelID(modelId int) (result []model.App, err error) {
 	var generateSQL strings.Builder
 	params = append(params, modelId)
 	generateSQL.WriteString("SELECT * FROM app WHERE model_id = ? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// SELECT * FROM @@table WHERE id = @id LIMIT 1
+func (a appDo) GetByID(id int) (result []model.App, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, id)
+	generateSQL.WriteString("SELECT * FROM app WHERE id = ? LIMIT 1 ")
 
 	var executeSQL *gorm.DB
 	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert

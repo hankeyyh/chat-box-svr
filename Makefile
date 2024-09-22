@@ -6,6 +6,10 @@ db: dep # create db
 	@echo "create db..."
 	@go run model/gen/main.go
 
+db_force: dep # force create db
+	@echo "force create db..."
+	@go run model/gen/main.go --force
+
 init_model: dep # init model
 	@echo "init model..."
 	@go run model/gen/main.go --init_model
