@@ -144,11 +144,15 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		end := errors.Is(err, io.EOF)
+		content := ""
+		if !end {
+			content = openaiRsp.Choices[0].Delta.Content
+		}
 		rsp := Response{
 			Code:    0,
 			Message: "",
 			Data:   ChatSpan{
-				Content: openaiRsp.Choices[0].Delta.Content,
+				Content: content,
 				End: end,
 			},
 		}
