@@ -48,4 +48,7 @@ func NewZError(code int, message string, err error) *zerror {
 	}
 }
 
-
+type ChatSpan struct {
+	Content string `json:"content"`
+	End bool `json:"end"`
+}

@@ -170,6 +170,7 @@ type IAiModelDo interface {
 	schema.Tabler
 
 	GetByName(name string) (result []model.AiModel, err error)
+	GetByID(id int) (result []model.AiModel, err error)
 	All() (result []model.AiModel, err error)
 }
 
@@ -180,6 +181,21 @@ func (a aiModelDo) GetByName(name string) (result []model.AiModel, err error) {
 	var generateSQL strings.Builder
 	params = append(params, name)
 	generateSQL.WriteString("SELECT * FROM ai_model WHERE name = ? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// SELECT * FROM @@table WHERE id = @id LIMIT 1
+func (a aiModelDo) GetByID(id int) (result []model.AiModel, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, id)
+	generateSQL.WriteString("SELECT * FROM ai_model WHERE id = ? LIMIT 1 ")
 
 	var executeSQL *gorm.DB
 	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert

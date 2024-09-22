@@ -1,5 +1,7 @@
 [server]
 port=8989
+key="sk-mRPg1ANRkqBB3JAxEb3185899519477dB896B558203e6183"
+base_url="https://api.b3n.fun/v1"
 
 [mysql]
 user_name="yuhanyang"

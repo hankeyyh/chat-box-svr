@@ -22,7 +22,7 @@ func HandleResponse(handleFunc RequestHandleFunc) func(http.ResponseWriter, *htt
 				return
 			}
 		}
-		
+
 		data, err := handleFunc(req)
 		rsp := Response{
 			Code:    err.GetCode(),
@@ -31,5 +31,27 @@ func HandleResponse(handleFunc RequestHandleFunc) func(http.ResponseWriter, *htt
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(rsp)
+	}
+}
+
+func HandleStreamResponse(handleFunc RequestHandleFunc) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Connection", "keep-alive")
+		w.(http.Flusher).Flush()
+		for {
+			data, err := handleFunc(req)
+			if data == nil {
+				return
+			}
+			rsp := Response{
+				Code:    err.GetCode(),
+				Message: err.GetMessage(),
+				Data:    data,
+			}
+			json.NewEncoder(w).Encode(rsp)
+			w.(http.Flusher).Flush()
+		}
 	}
 }

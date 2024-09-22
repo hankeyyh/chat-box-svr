@@ -9,6 +9,8 @@ type Conf struct {
 
 type serverConf struct {
 	Port int `toml:"port"`
+	Key string `toml:"key"`
+	BaseUrl string `toml:"base_url"`
 }
 
 type mySqlConf struct {

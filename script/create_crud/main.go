@@ -13,6 +13,8 @@ import (
 type AiModelQuery interface {
 	// SELECT * FROM @@table WHERE name = @name
 	GetByName(name string) ([]gen.T, error)
+	// SELECT * FROM @@table WHERE id = @id LIMIT 1
+	GetByID(id int) ([]gen.T, error)
 	// SELECT * FROM @@table
 	All() ([]gen.T, error)
 }

@@ -22,7 +22,7 @@ func main() {
 	http.HandleFunc("/app/release", logic.HandleResponse(logic.AppRelease))
 	http.HandleFunc("/app/unrelease", logic.HandleResponse(logic.AppUnrelease))
 	http.HandleFunc("/app/chat-list", logic.HandleResponse(logic.AppChatList))
-	http.HandleFunc("/app/chat", logic.HandleResponse(logic.AppChat))
+	http.HandleFunc("/app/chat", logic.AppChat)
 
 	fmt.Printf("Server started at %s\n", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
