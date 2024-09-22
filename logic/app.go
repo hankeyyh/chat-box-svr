@@ -58,7 +58,7 @@ func AppUpsert(req *http.Request) (interface{}, *zerror) {
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
-
+	// TODO message type match orm type
 	app := model.App{
 		Id: 			uint64(request.AppId),
 		ModelId:        uint64(request.ModelId),
