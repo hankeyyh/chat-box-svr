@@ -31,8 +31,13 @@ func newApp(db *gorm.DB, opts ...gen.DOOption) app {
 	_app.Id = field.NewUint64(tableName, "id")
 	_app.ModelId = field.NewUint64(tableName, "model_id")
 	_app.Name = field.NewString(tableName, "name")
+	_app.Temperature = field.NewFloat32(tableName, "temperature")
+	_app.TopP = field.NewFloat32(tableName, "top_p")
+	_app.MaxOutputTokens = field.NewInt(tableName, "max_output_tokens")
+	_app.Context = field.NewInt(tableName, "context")
 	_app.CreatedBy = field.NewString(tableName, "created_by")
 	_app.Introduction = field.NewString(tableName, "introduction")
+	_app.Prologue = field.NewString(tableName, "prologue")
 	_app.Prompt = field.NewString(tableName, "prompt")
 	_app.IsPublic = field.NewInt8(tableName, "is_public")
 	_app.CreatedAt = field.NewTime(tableName, "created_at")
@@ -46,16 +51,21 @@ func newApp(db *gorm.DB, opts ...gen.DOOption) app {
 type app struct {
 	appDo
 
-	ALL          field.Asterisk
-	Id           field.Uint64
-	ModelId      field.Uint64
-	Name         field.String
-	CreatedBy    field.String
-	Introduction field.String
-	Prompt       field.String
-	IsPublic     field.Int8
-	CreatedAt    field.Time
-	UpdatedAt    field.Time
+	ALL             field.Asterisk
+	Id              field.Uint64
+	ModelId         field.Uint64
+	Name            field.String
+	Temperature     field.Float32
+	TopP            field.Float32
+	MaxOutputTokens field.Int
+	Context         field.Int
+	CreatedBy       field.String
+	Introduction    field.String
+	Prologue        field.String
+	Prompt          field.String
+	IsPublic        field.Int8
+	CreatedAt       field.Time
+	UpdatedAt       field.Time
 
 	fieldMap map[string]field.Expr
 }
@@ -75,8 +85,13 @@ func (a *app) updateTableName(table string) *app {
 	a.Id = field.NewUint64(table, "id")
 	a.ModelId = field.NewUint64(table, "model_id")
 	a.Name = field.NewString(table, "name")
+	a.Temperature = field.NewFloat32(table, "temperature")
+	a.TopP = field.NewFloat32(table, "top_p")
+	a.MaxOutputTokens = field.NewInt(table, "max_output_tokens")
+	a.Context = field.NewInt(table, "context")
 	a.CreatedBy = field.NewString(table, "created_by")
 	a.Introduction = field.NewString(table, "introduction")
+	a.Prologue = field.NewString(table, "prologue")
 	a.Prompt = field.NewString(table, "prompt")
 	a.IsPublic = field.NewInt8(table, "is_public")
 	a.CreatedAt = field.NewTime(table, "created_at")
@@ -97,12 +112,17 @@ func (a *app) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (a *app) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 9)
+	a.fieldMap = make(map[string]field.Expr, 14)
 	a.fieldMap["id"] = a.Id
 	a.fieldMap["model_id"] = a.ModelId
 	a.fieldMap["name"] = a.Name
+	a.fieldMap["temperature"] = a.Temperature
+	a.fieldMap["top_p"] = a.TopP
+	a.fieldMap["max_output_tokens"] = a.MaxOutputTokens
+	a.fieldMap["context"] = a.Context
 	a.fieldMap["created_by"] = a.CreatedBy
 	a.fieldMap["introduction"] = a.Introduction
+	a.fieldMap["prologue"] = a.Prologue
 	a.fieldMap["prompt"] = a.Prompt
 	a.fieldMap["is_public"] = a.IsPublic
 	a.fieldMap["created_at"] = a.CreatedAt
@@ -188,6 +208,7 @@ type IAppDo interface {
 	AllPublic() (result []model.App, err error)
 	AllPrivateByAuthor(createdBy string) (result []model.App, err error)
 	UpdateIsPublic(id int, isPublic bool) (err error)
+	Upsert(modelId int, name string, temperature float32, topP float32, maxOutputTokens int, context int, createdBy string, introduction string, prologue string, prompt string, isPublic bool) (err error)
 }
 
 // SELECT * FROM @@table WHERE name = @name
@@ -285,6 +306,40 @@ func (a appDo) UpdateIsPublic(id int, isPublic bool) (err error) {
 	params = append(params, isPublic)
 	params = append(params, id)
 	generateSQL.WriteString("UPDATE app SET is_public = ? WHERE id = ? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = a.UnderlyingDB().Exec(generateSQL.String(), params...) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// INSERT INTO @@table (model_id, name, temperature, top_p, max_output_tokens, context, created_by, introduction, prologue, prompt, is_public) VALUES (@modelId, @name, @temperature, @topP, @maxOutputTokens, @context, @createdBy, @introduction, @prologue, @prompt, @isPublic) ON DUPLICATE KEY UPDATE name = @name, temperature = @temperature, top_p = @topP, max_output_tokens = @maxOutputTokens, context = @context, introduction = @introduction, prologue = @prologue, prompt = @prompt, is_public = @isPublic
+func (a appDo) Upsert(modelId int, name string, temperature float32, topP float32, maxOutputTokens int, context int, createdBy string, introduction string, prologue string, prompt string, isPublic bool) (err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, modelId)
+	params = append(params, name)
+	params = append(params, temperature)
+	params = append(params, topP)
+	params = append(params, maxOutputTokens)
+	params = append(params, context)
+	params = append(params, createdBy)
+	params = append(params, introduction)
+	params = append(params, prologue)
+	params = append(params, prompt)
+	params = append(params, isPublic)
+	params = append(params, name)
+	params = append(params, temperature)
+	params = append(params, topP)
+	params = append(params, maxOutputTokens)
+	params = append(params, context)
+	params = append(params, introduction)
+	params = append(params, prologue)
+	params = append(params, prompt)
+	params = append(params, isPublic)
+	generateSQL.WriteString("INSERT INTO app (model_id, name, temperature, top_p, max_output_tokens, context, created_by, introduction, prologue, prompt, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = ?, temperature = ?, top_p = ?, max_output_tokens = ?, context = ?, introduction = ?, prologue = ?, prompt = ?, is_public = ? ")
 
 	var executeSQL *gorm.DB
 	executeSQL = a.UnderlyingDB().Exec(generateSQL.String(), params...) // ignore_security_alert

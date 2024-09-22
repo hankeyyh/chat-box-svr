@@ -7,26 +7,35 @@ import (
 
 type RequestHandleFunc func(req *http.Request) (interface{}, *zerror)
 
-func HandleResponse(handleFunc RequestHandleFunc) func(http.ResponseWriter, *http.Request) {
+func HandleGetFormRequest(handleFunc RequestHandleFunc) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		if req.Header.Get("Content-Type") == "application/x-www-form-urlencoded" {
-			err := req.ParseForm()
-			if err != nil {
-				rsp := Response{
-					Code:    -1,
-					Message: err.Error(),
-					Data:    nil,
-				}
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(rsp)
-				return
+		if req.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Content-Type must be application/x-www-form-urlencoded"))
+			return
+		}
+		if req.Method != "GET" {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Method must be GET"))
+			return
+		}
+		err := req.ParseForm()
+		if err != nil {
+			rsp := Response{
+				Code:    -1,
+				Message: err.Error(),
+				Data:    nil,
 			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(rsp)
+			return
 		}
 
-		data, err := handleFunc(req)
+		var zerr *zerror
+		data, zerr := handleFunc(req)
 		rsp := Response{
-			Code:    err.GetCode(),
-			Message: err.GetMessage(),
+			Code:    zerr.GetCode(),
+			Message: zerr.GetMessage(),
 			Data:    data,
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -34,24 +43,27 @@ func HandleResponse(handleFunc RequestHandleFunc) func(http.ResponseWriter, *htt
 	}
 }
 
-func HandleStreamResponse(handleFunc RequestHandleFunc) func(http.ResponseWriter, *http.Request) {
+func HandlePostJsonRequest(handleFunc RequestHandleFunc) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		w.Header().Set("Content-Type", "text/event-stream")
-		w.Header().Set("Cache-Control", "no-cache")
-		w.Header().Set("Connection", "keep-alive")
-		w.(http.Flusher).Flush()
-		for {
-			data, err := handleFunc(req)
-			if data == nil {
-				return
-			}
-			rsp := Response{
-				Code:    err.GetCode(),
-				Message: err.GetMessage(),
-				Data:    data,
-			}
-			json.NewEncoder(w).Encode(rsp)
-			w.(http.Flusher).Flush()
+		if req.Header.Get("Content-Type") != "application/json" {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Content-Type must be application/json"))
+			return
 		}
+		if req.Method != "POST" {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Method must be POST"))
+			return
+		}
+
+		var zerr *zerror
+		data, zerr := handleFunc(req)
+		rsp := Response{
+			Code:    zerr.GetCode(),
+			Message: zerr.GetMessage(),
+			Data:    data,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(rsp)
 	}
 }

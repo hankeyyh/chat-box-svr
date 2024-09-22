@@ -31,7 +31,7 @@ func newAiModel(db *gorm.DB, opts ...gen.DOOption) aiModel {
 	_aiModel.Id = field.NewUint64(tableName, "id")
 	_aiModel.Name = field.NewString(tableName, "name")
 	_aiModel.Enabled = field.NewInt8(tableName, "enabled")
-	_aiModel.MaxOutputToken = field.NewUint64(tableName, "max_output_token")
+	_aiModel.MaxOutputTokens = field.NewUint64(tableName, "max_output_tokens")
 	_aiModel.CreatedAt = field.NewTime(tableName, "created_at")
 	_aiModel.UpdatedAt = field.NewTime(tableName, "updated_at")
 
@@ -43,13 +43,13 @@ func newAiModel(db *gorm.DB, opts ...gen.DOOption) aiModel {
 type aiModel struct {
 	aiModelDo
 
-	ALL            field.Asterisk
-	Id             field.Uint64
-	Name           field.String
-	Enabled        field.Int8
-	MaxOutputToken field.Uint64
-	CreatedAt      field.Time
-	UpdatedAt      field.Time
+	ALL             field.Asterisk
+	Id              field.Uint64
+	Name            field.String
+	Enabled         field.Int8
+	MaxOutputTokens field.Uint64
+	CreatedAt       field.Time
+	UpdatedAt       field.Time
 
 	fieldMap map[string]field.Expr
 }
@@ -69,7 +69,7 @@ func (a *aiModel) updateTableName(table string) *aiModel {
 	a.Id = field.NewUint64(table, "id")
 	a.Name = field.NewString(table, "name")
 	a.Enabled = field.NewInt8(table, "enabled")
-	a.MaxOutputToken = field.NewUint64(table, "max_output_token")
+	a.MaxOutputTokens = field.NewUint64(table, "max_output_tokens")
 	a.CreatedAt = field.NewTime(table, "created_at")
 	a.UpdatedAt = field.NewTime(table, "updated_at")
 
@@ -92,7 +92,7 @@ func (a *aiModel) fillFieldMap() {
 	a.fieldMap["id"] = a.Id
 	a.fieldMap["name"] = a.Name
 	a.fieldMap["enabled"] = a.Enabled
-	a.fieldMap["max_output_token"] = a.MaxOutputToken
+	a.fieldMap["max_output_tokens"] = a.MaxOutputTokens
 	a.fieldMap["created_at"] = a.CreatedAt
 	a.fieldMap["updated_at"] = a.UpdatedAt
 }

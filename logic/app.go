@@ -7,8 +7,10 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+
 	"github.com/hankeyyh/chat-box-svr/conf"
 	"github.com/hankeyyh/chat-box-svr/dao"
+	"github.com/hankeyyh/chat-box-svr/model"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -51,16 +53,43 @@ func AppDetail(req *http.Request) (interface{}, *zerror) {
 }
 
 func AppUpsert(req *http.Request) (interface{}, *zerror) {
-	return nil, nil
-}
-
-func AppRelease(req *http.Request) (interface{}, *zerror) {
-	appIDStr := req.Form.Get("app_id")
-	appId, err := strconv.Atoi(appIDStr)
+	request := AppUpsertRequest{}
+	err := json.NewDecoder(req.Body).Decode(&request)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
-	err = dao.App.UpdateIsPublic(appId, true)
+
+	app := model.App{
+		Id: 			uint64(request.AppId),
+		ModelId:        uint64(request.ModelId),
+		Name:           request.Name,
+		Temperature:    request.Temperature,
+		TopP:           request.TopP,
+		MaxOutputTokens:request.MaxOutputTokens,
+		Context:        request.Context,
+		CreatedBy:      request.CreatedBy,
+		Introduction:   request.Introduction,
+		Prologue:       request.Prologue,
+		Prompt:         request.Prompt,
+		IsPublic:       request.IsPublic,
+	}
+	err = dao.App.Save(&app)
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
+	data := AppUpsertResponseData{
+		AppId: int(app.Id),
+	}
+	return data, nil
+}
+
+func AppRelease(req *http.Request) (interface{}, *zerror) {
+	request := AppReleaseRequest{}
+	err := json.NewDecoder(req.Body).Decode(&request)
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
+	err = dao.App.UpdateIsPublic(request.AppId, true)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
@@ -68,12 +97,12 @@ func AppRelease(req *http.Request) (interface{}, *zerror) {
 }
 
 func AppUnrelease(req *http.Request) (interface{}, *zerror) {
-	appIDStr := req.Form.Get("app_id")
-	appId, err := strconv.Atoi(appIDStr)
+	request := AppUnReleaseRequest{}
+	err := json.NewDecoder(req.Body).Decode(&request)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
-	err = dao.App.UpdateIsPublic(appId, false)
+	err = dao.App.UpdateIsPublic(request.AppId, false)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
@@ -83,7 +112,6 @@ func AppUnrelease(req *http.Request) (interface{}, *zerror) {
 func AppChatList(req *http.Request) (interface{}, *zerror) {
 	return nil, nil
 }
-
 
 func AppChat(w http.ResponseWriter, req *http.Request) {
 	if err := req.ParseForm(); err != nil {
@@ -109,23 +137,23 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 		returnError(w, err)
 		return
 	}
-	
+
 	serverConf := conf.DefaultConf.ServerConf
 	openaiConf := openai.DefaultConfig(serverConf.Key)
 	openaiConf.BaseURL = serverConf.BaseUrl
 	client := openai.NewClientWithConfig(openaiConf)
 	openaiReq := openai.ChatCompletionRequest{
-		Model:   model[0].Name,
+		Model:       model[0].Name,
 		Temperature: app[0].Temperature,
-		TopP: app[0].TopP,
-		MaxTokens: int(app[0].MaxOutputTokens),
+		TopP:        app[0].TopP,
+		MaxTokens:   int(app[0].MaxOutputTokens),
 		Messages: []openai.ChatCompletionMessage{
 			{
-				Role: openai.ChatMessageRoleSystem,
+				Role:    openai.ChatMessageRoleSystem,
 				Content: app[0].Prompt,
 			},
 			{
-				Role: openai.ChatMessageRoleUser,
+				Role:    openai.ChatMessageRoleUser,
 				Content: content,
 			},
 		},
@@ -157,9 +185,9 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 		rsp := Response{
 			Code:    0,
 			Message: "",
-			Data:   ChatSpan{
+			Data: ChatSpan{
 				Content: content,
-				End: end,
+				End:     end,
 			},
 		}
 		json.NewEncoder(w).Encode(rsp)

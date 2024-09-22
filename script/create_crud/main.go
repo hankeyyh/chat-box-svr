@@ -34,6 +34,8 @@ type AppQuery interface {
 	AllPrivateByAuthor(createdBy string) ([]gen.T, error)
 	// UPDATE @@table SET is_public = @isPublic WHERE id = @id
 	UpdateIsPublic(id int, isPublic bool) error
+	// INSERT INTO @@table (model_id, name, temperature, top_p, max_output_tokens, context, created_by, introduction, prologue, prompt, is_public) VALUES (@modelId, @name, @temperature, @topP, @maxOutputTokens, @context, @createdBy, @introduction, @prologue, @prompt, @isPublic) ON DUPLICATE KEY UPDATE name = @name, temperature = @temperature, top_p = @topP, max_output_tokens = @maxOutputTokens, context = @context, introduction = @introduction, prologue = @prologue, prompt = @prompt, is_public = @isPublic
+	Upsert(modelId int, name string, temperature float32, topP float32, maxOutputTokens int, context int, createdBy string, introduction string, prologue string, prompt string, isPublic bool) error
 }
 
 func main() {
