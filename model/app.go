@@ -6,6 +6,9 @@ type App struct {
 	Id uint64 `json:"id" gorm:"column:id;type:bigint(20) unsigned;not null;autoIncrement;primaryKey;comment:主键"`
 	ModelId uint64 `json:"model_id" gorm:"column:model_id;type:bigint(20) unsigned;not null;default:0;comment:模型id"`
 	Name string `json:"name" gorm:"column:name;type:varchar(100);not null;default:'';size:100;comment:应用名称"`
+	Temperature float32 `json:"temperature" gorm:"column:temperature;type:float;not null;default:0;precision:3;scale:2;comment:temperature"` 
+	TopP float32 `json:"top_p" gorm:"column:top_p;type:float;not null;default:0;precision:3;scale:2;comment:top_p"`
+	MaxOutputTokens int `json:"max_output_tokens" gorm:"column:max_output_tokens;type:int(11);not null;default:0;comment:最大输出token"`
 	CreatedBy string `json:"created_by" gorm:"column:created_by;type:varchar(200);not null;default:'';size:200;comment:创建者"`
 	Introduction string `json:"introduction" gorm:"column:introduction;type:varchar(500);not null;default:'';size:500;comment:介绍"`
 	Prompt string `json:"prompt" gorm:"column:prompt;type:text;not null;comment:prompt"`

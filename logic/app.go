@@ -116,10 +116,16 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 	client := openai.NewClientWithConfig(openaiConf)
 	openaiReq := openai.ChatCompletionRequest{
 		Model:   model[0].Name,
-		MaxTokens: int(model[0].MaxOutputToken),
+		Temperature: app[0].Temperature,
+		TopP: app[0].TopP,
+		MaxTokens: int(app[0].MaxOutputTokens),
 		Messages: []openai.ChatCompletionMessage{
 			{
-				Role: openai.ChatMessageRoleAssistant,
+				Role: openai.ChatMessageRoleSystem,
+				Content: app[0].Prompt,
+			},
+			{
+				Role: openai.ChatMessageRoleUser,
 				Content: content,
 			},
 		},
