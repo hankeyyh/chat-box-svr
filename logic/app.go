@@ -50,10 +50,28 @@ func AppUpsert(req *http.Request) (interface{}, *zerror) {
 }
 
 func AppRelease(req *http.Request) (interface{}, *zerror) {
+	appIDStr := req.Form.Get("app_id")
+	appId, err := strconv.Atoi(appIDStr)
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
+	err = dao.App.UpdateIsPublic(appId, true)
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
 	return nil, nil
 }
 
 func AppUnrelease(req *http.Request) (interface{}, *zerror) {
+	appIDStr := req.Form.Get("app_id")
+	appId, err := strconv.Atoi(appIDStr)
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
+	err = dao.App.UpdateIsPublic(appId, false)
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
 	return nil, nil
 }
 

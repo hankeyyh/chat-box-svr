@@ -30,6 +30,8 @@ type AppQuery interface {
 	AllPublic() ([]gen.T, error)
 	// SELECT * FROM @@table WHERE is_public = 0 AND created_by = @createdBy
 	AllPrivateByAuthor(createdBy string) ([]gen.T, error)
+	// UPDATE @@table SET is_public = @isPublic WHERE id = @id
+	UpdateIsPublic(id int, isPublic bool) error
 }
 
 func main() {

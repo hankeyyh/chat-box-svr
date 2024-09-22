@@ -187,6 +187,7 @@ type IAppDo interface {
 	GetByAuthor(createdBy string) (result []model.App, err error)
 	AllPublic() (result []model.App, err error)
 	AllPrivateByAuthor(createdBy string) (result []model.App, err error)
+	UpdateIsPublic(id int, isPublic bool) (err error)
 }
 
 // SELECT * FROM @@table WHERE name = @name
@@ -271,6 +272,22 @@ func (a appDo) AllPrivateByAuthor(createdBy string) (result []model.App, err err
 
 	var executeSQL *gorm.DB
 	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// UPDATE @@table SET is_public = @isPublic WHERE id = @id
+func (a appDo) UpdateIsPublic(id int, isPublic bool) (err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, isPublic)
+	params = append(params, id)
+	generateSQL.WriteString("UPDATE app SET is_public = ? WHERE id = ? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = a.UnderlyingDB().Exec(generateSQL.String(), params...) // ignore_security_alert
 	err = executeSQL.Error
 
 	return
