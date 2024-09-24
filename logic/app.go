@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -141,6 +142,7 @@ func AppChatList(req *http.Request) (interface{}, *zerror) {
 	return historyList, nil
 }
 
+// TODO changge to post json
 func AppChat(w http.ResponseWriter, req *http.Request) {
 	if err := req.ParseForm(); err != nil {
 		returnError(w, err)
@@ -154,14 +156,32 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	content := req.Form.Get("content")
+	userId, err := strconv.ParseUint(req.Header.Get("user_id"), 10, 64)
+	if err != nil {
+		returnError(w, err)
+		return
+	}
 
 	app, err := dao.App.GetByID(appId)
 	if err != nil {
 		returnError(w, err)
 		return
 	}
-	model, err := dao.AiModel.GetByID(app[0].ModelId)
+	aimodel, err := dao.AiModel.GetByID(app[0].ModelId)
 	if err != nil {
+		returnError(w, err)
+		return
+	}
+
+	// save to chat list
+	userChat := model.ChatHistory{
+		AppId:    app[0].Id,
+		ParentId: nil,
+		UserId:   userId,
+		Sender: "user",
+		Content: content,
+	}
+	if err = dao.ChatHistory.Save(&userChat); err != nil {
 		returnError(w, err)
 		return
 	}
@@ -171,7 +191,7 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 	openaiConf.BaseURL = serverConf.BaseUrl
 	client := openai.NewClientWithConfig(openaiConf)
 	openaiReq := openai.ChatCompletionRequest{
-		Model:       model[0].Name,
+		Model:       aimodel[0].Name,
 		Temperature: app[0].Temperature,
 		TopP:        app[0].TopP,
 		MaxTokens:   int(app[0].MaxOutputTokens),
@@ -198,6 +218,9 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 	w.(http.Flusher).Flush()
+
+	// write stream to buffer
+	var assistantBuf bytes.Buffer
 	for {
 		openaiRsp, err := stream.Recv()
 		if err != nil && !errors.Is(err, io.EOF) {
@@ -210,6 +233,7 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 		if !end {
 			content = openaiRsp.Choices[0].Delta.Content
 		}
+		assistantBuf.WriteString(content)
 		rsp := Response{
 			Code:    0,
 			Message: "",
@@ -221,8 +245,20 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(w).Encode(rsp)
 		w.(http.Flusher).Flush()
 		if end {
-			return
+			break
 		}
+	}
+	// save assistant chat
+	assistantChat := model.ChatHistory{
+		AppId:    app[0].Id,
+		ParentId: &userChat.Id,
+		UserId:   userId,
+		Sender: "assistant",
+		Content: assistantBuf.String(),
+	}
+	if err = dao.ChatHistory.Save(&assistantChat); err != nil {
+		returnError(w, err)
+		return
 	}
 }
 
