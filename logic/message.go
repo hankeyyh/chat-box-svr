@@ -54,16 +54,16 @@ type ChatSpan struct {
 }
 
 type AppReleaseRequest struct {
-	AppId int `json:"app_id"`
+	AppId uint64 `json:"app_id"`
 }
 
 type AppUnReleaseRequest struct {
-	AppId int `json:"app_id"`
+	AppId uint64 `json:"app_id"`
 }
 
 type AppUpsertRequest struct {
-	AppId           int     `json:"app_id"`
-	ModelId         int     `json:"model_id"`
+	AppId           uint64     `json:"app_id"`
+	ModelId         uint64     `json:"model_id"`
 	Name            string  `json:"name"`
 	Temperature     float32 `json:"temperature"`//控制模型回复的创造性和随机性。数值越高，模型的回复越有创造性
 	TopP            float32 `json:"top_p"`//控制模型回复时候选内容的多少。数值太低模型的回复会比较固定，数值太高模型的回复会比较放飞自我
@@ -77,5 +77,5 @@ type AppUpsertRequest struct {
 }
 
 type AppUpsertResponseData struct {
-	AppId int `json:"app_id"`
+	AppId uint64 `json:"app_id"`
 }

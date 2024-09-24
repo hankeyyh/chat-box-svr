@@ -12,6 +12,7 @@ import (
 
 var forceCreate = flag.Bool("force", false, "force create table")
 
+// struct to table
 func main() {
 	flag.Parse()
 
@@ -26,6 +27,9 @@ func main() {
 		panic(err)
 	}
 	if err = createModel(gormdb, model.App{}); err != nil {
+		panic(err)
+	}
+	if err = createModel(gormdb, model.ChatHistory{}); err != nil {
 		panic(err)
 	}
 }

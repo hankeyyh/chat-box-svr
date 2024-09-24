@@ -16,39 +16,44 @@ import (
 )
 
 var (
-	Q       = new(Query)
-	AiModel *aiModel
-	App     *app
+	Q           = new(Query)
+	AiModel     *aiModel
+	App         *app
+	ChatHistory *chatHistory
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	AiModel = &Q.AiModel
 	App = &Q.App
+	ChatHistory = &Q.ChatHistory
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:      db,
-		AiModel: newAiModel(db, opts...),
-		App:     newApp(db, opts...),
+		db:          db,
+		AiModel:     newAiModel(db, opts...),
+		App:         newApp(db, opts...),
+		ChatHistory: newChatHistory(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	AiModel aiModel
-	App     app
+	AiModel     aiModel
+	App         app
+	ChatHistory chatHistory
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:      db,
-		AiModel: q.AiModel.clone(db),
-		App:     q.App.clone(db),
+		db:          db,
+		AiModel:     q.AiModel.clone(db),
+		App:         q.App.clone(db),
+		ChatHistory: q.ChatHistory.clone(db),
 	}
 }
 
@@ -62,21 +67,24 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:      db,
-		AiModel: q.AiModel.replaceDB(db),
-		App:     q.App.replaceDB(db),
+		db:          db,
+		AiModel:     q.AiModel.replaceDB(db),
+		App:         q.App.replaceDB(db),
+		ChatHistory: q.ChatHistory.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	AiModel IAiModelDo
-	App     IAppDo
+	AiModel     IAiModelDo
+	App         IAppDo
+	ChatHistory IChatHistoryDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		AiModel: q.AiModel.WithContext(ctx),
-		App:     q.App.WithContext(ctx),
+		AiModel:     q.AiModel.WithContext(ctx),
+		App:         q.App.WithContext(ctx),
+		ChatHistory: q.ChatHistory.WithContext(ctx),
 	}
 }
 

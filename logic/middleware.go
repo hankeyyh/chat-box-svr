@@ -9,11 +9,6 @@ type RequestHandleFunc func(req *http.Request) (interface{}, *zerror)
 
 func HandleGetFormRequest(handleFunc RequestHandleFunc) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		if req.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Content-Type must be application/x-www-form-urlencoded"))
-			return
-		}
 		if req.Method != "GET" {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("Method must be GET"))

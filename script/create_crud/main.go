@@ -14,7 +14,7 @@ type AiModelQuery interface {
 	// SELECT * FROM @@table WHERE name = @name
 	GetByName(name string) ([]gen.T, error)
 	// SELECT * FROM @@table WHERE id = @id LIMIT 1
-	GetByID(id int) ([]gen.T, error)
+	GetByID(id uint64) ([]gen.T, error)
 	// SELECT * FROM @@table
 	All() ([]gen.T, error)
 }
@@ -23,9 +23,9 @@ type AppQuery interface {
 	// SELECT * FROM @@table WHERE name = @name
 	GetByName(name string) ([]gen.T, error)
 	// SELECT * FROM @@table WHERE model_id = @modelId
-	GetByModelID(modelId int) ([]gen.T, error)
+	GetByModelID(modelId uint64) ([]gen.T, error)
 	// SELECT * FROM @@table WHERE id = @id LIMIT 1
-	GetByID(id int) ([]gen.T, error)
+	GetByID(id uint64) ([]gen.T, error)
 	// SEECT * FROM @@table WHERE created_by = @createdBy
 	GetByAuthor(createdBy string) ([]gen.T, error)
 	// SELECT * FROM @@table WHERE is_public = 1
@@ -33,9 +33,20 @@ type AppQuery interface {
 	// SELECT * FROM @@table WHERE is_public = 0 AND created_by = @createdBy
 	AllPrivateByAuthor(createdBy string) ([]gen.T, error)
 	// UPDATE @@table SET is_public = @isPublic WHERE id = @id
-	UpdateIsPublic(id int, isPublic bool) error
-	// INSERT INTO @@table (model_id, name, temperature, top_p, max_output_tokens, context, created_by, introduction, prologue, prompt, is_public) VALUES (@modelId, @name, @temperature, @topP, @maxOutputTokens, @context, @createdBy, @introduction, @prologue, @prompt, @isPublic) ON DUPLICATE KEY UPDATE name = @name, temperature = @temperature, top_p = @topP, max_output_tokens = @maxOutputTokens, context = @context, introduction = @introduction, prologue = @prologue, prompt = @prompt, is_public = @isPublic
-	Upsert(modelId int, name string, temperature float32, topP float32, maxOutputTokens int, context int, createdBy string, introduction string, prologue string, prompt string, isPublic bool) error
+	UpdateIsPublic(id uint64, isPublic bool) error
+}
+
+type ChatHistoryQuery interface {
+	// SELECT * FROM @@table WHERE id = @id LIMIT 1
+	GetByID(id uint64) ([]gen.T, error)
+	// SELECT * FROM @@table WHERE parent_id = @parentId
+	GetByParentID(parentId uint64) ([]gen.T, error)
+	// SELECT * FROM @@table WHERE 
+	// {{if lastId != 0}}
+	// 	id < @lastId AND 
+	// {{end}}
+	// app_id = @appId AND user_id = @userId ORDER BY id DESC LIMIT @offset, @limit
+	BatchGetRecentByUserID(appId, userId uint64, lastId uint64, offset int, limit int) ([]gen.T, error)
 }
 
 func main() {
@@ -54,6 +65,9 @@ func main() {
 		panic(err)
 	}
 	if err = createApi(gormdb, g, model.App{}, func(AppQuery) {}); err != nil {
+		panic(err)
+	}
+	if err = createApi(gormdb, g, model.ChatHistory{}, func(ChatHistoryQuery) {}); err != nil {
 		panic(err)
 	}
 }

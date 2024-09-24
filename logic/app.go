@@ -37,7 +37,7 @@ func AppPrivateList(req *http.Request) (interface{}, *zerror) {
 
 func AppDetail(req *http.Request) (interface{}, *zerror) {
 	appIDStr := req.Form.Get("app_id")
-	appId, err := strconv.Atoi(appIDStr)
+	appId, err := strconv.ParseUint(appIDStr, 10, 64)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
@@ -60,25 +60,25 @@ func AppUpsert(req *http.Request) (interface{}, *zerror) {
 	}
 	// TODO message type match orm type
 	app := model.App{
-		Id: 			uint64(request.AppId),
-		ModelId:        uint64(request.ModelId),
-		Name:           request.Name,
-		Temperature:    request.Temperature,
-		TopP:           request.TopP,
-		MaxOutputTokens:request.MaxOutputTokens,
-		Context:        request.Context,
-		CreatedBy:      request.CreatedBy,
-		Introduction:   request.Introduction,
-		Prologue:       request.Prologue,
-		Prompt:         request.Prompt,
-		IsPublic:       request.IsPublic,
+		Id:              request.AppId,
+		ModelId:         request.ModelId,
+		Name:            request.Name,
+		Temperature:     request.Temperature,
+		TopP:            request.TopP,
+		MaxOutputTokens: request.MaxOutputTokens,
+		Context:         request.Context,
+		CreatedBy:       request.CreatedBy,
+		Introduction:    request.Introduction,
+		Prologue:        request.Prologue,
+		Prompt:          request.Prompt,
+		IsPublic:        request.IsPublic,
 	}
 	err = dao.App.Save(&app)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
 	data := AppUpsertResponseData{
-		AppId: int(app.Id),
+		AppId: app.Id,
 	}
 	return data, nil
 }
@@ -110,7 +110,36 @@ func AppUnrelease(req *http.Request) (interface{}, *zerror) {
 }
 
 func AppChatList(req *http.Request) (interface{}, *zerror) {
-	return nil, nil
+	appId, err := strconv.ParseUint(req.Form.Get("app_id"), 10, 64)
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
+	var chatId uint64
+	if req.Form.Get("chat_id") != "" {
+		var err error
+		chatId, err = strconv.ParseUint(req.Form.Get("chat_id"), 10, 64)
+		if err != nil {
+			return nil, NewZError(-1, err.Error(), err)
+		}
+	}
+	page, err := strconv.Atoi(req.Form.Get("page"))
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
+	pageSize, err := strconv.Atoi(req.Form.Get("page_size"))
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
+	userId, err := strconv.ParseUint(req.Header.Get("user_id"), 10, 64)
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
+
+	historyList, err := dao.ChatHistory.BatchGetRecentByUserID(appId, userId, chatId, page, pageSize)
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
+	return historyList, nil
 }
 
 func AppChat(w http.ResponseWriter, req *http.Request) {
@@ -120,7 +149,7 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 	}
 
 	appIDStr := req.Form.Get("app_id")
-	appId, err := strconv.Atoi(appIDStr)
+	appId, err := strconv.ParseUint(appIDStr, 10, 64)
 	if err != nil {
 		returnError(w, err)
 		return
@@ -132,7 +161,7 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 		returnError(w, err)
 		return
 	}
-	model, err := dao.AiModel.GetByID(int(app[0].ModelId))
+	model, err := dao.AiModel.GetByID(app[0].ModelId)
 	if err != nil {
 		returnError(w, err)
 		return

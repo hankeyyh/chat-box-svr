@@ -170,7 +170,7 @@ type IAiModelDo interface {
 	schema.Tabler
 
 	GetByName(name string) (result []model.AiModel, err error)
-	GetByID(id int) (result []model.AiModel, err error)
+	GetByID(id uint64) (result []model.AiModel, err error)
 	All() (result []model.AiModel, err error)
 }
 
@@ -190,7 +190,7 @@ func (a aiModelDo) GetByName(name string) (result []model.AiModel, err error) {
 }
 
 // SELECT * FROM @@table WHERE id = @id LIMIT 1
-func (a aiModelDo) GetByID(id int) (result []model.AiModel, err error) {
+func (a aiModelDo) GetByID(id uint64) (result []model.AiModel, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder

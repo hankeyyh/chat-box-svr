@@ -202,13 +202,12 @@ type IAppDo interface {
 	schema.Tabler
 
 	GetByName(name string) (result []model.App, err error)
-	GetByModelID(modelId int) (result []model.App, err error)
-	GetByID(id int) (result []model.App, err error)
+	GetByModelID(modelId uint64) (result []model.App, err error)
+	GetByID(id uint64) (result []model.App, err error)
 	GetByAuthor(createdBy string) (result []model.App, err error)
 	AllPublic() (result []model.App, err error)
 	AllPrivateByAuthor(createdBy string) (result []model.App, err error)
-	UpdateIsPublic(id int, isPublic bool) (err error)
-	Upsert(modelId int, name string, temperature float32, topP float32, maxOutputTokens int, context int, createdBy string, introduction string, prologue string, prompt string, isPublic bool) (err error)
+	UpdateIsPublic(id uint64, isPublic bool) (err error)
 }
 
 // SELECT * FROM @@table WHERE name = @name
@@ -227,7 +226,7 @@ func (a appDo) GetByName(name string) (result []model.App, err error) {
 }
 
 // SELECT * FROM @@table WHERE model_id = @modelId
-func (a appDo) GetByModelID(modelId int) (result []model.App, err error) {
+func (a appDo) GetByModelID(modelId uint64) (result []model.App, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
@@ -242,7 +241,7 @@ func (a appDo) GetByModelID(modelId int) (result []model.App, err error) {
 }
 
 // SELECT * FROM @@table WHERE id = @id LIMIT 1
-func (a appDo) GetByID(id int) (result []model.App, err error) {
+func (a appDo) GetByID(id uint64) (result []model.App, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
@@ -299,47 +298,13 @@ func (a appDo) AllPrivateByAuthor(createdBy string) (result []model.App, err err
 }
 
 // UPDATE @@table SET is_public = @isPublic WHERE id = @id
-func (a appDo) UpdateIsPublic(id int, isPublic bool) (err error) {
+func (a appDo) UpdateIsPublic(id uint64, isPublic bool) (err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, isPublic)
 	params = append(params, id)
 	generateSQL.WriteString("UPDATE app SET is_public = ? WHERE id = ? ")
-
-	var executeSQL *gorm.DB
-	executeSQL = a.UnderlyingDB().Exec(generateSQL.String(), params...) // ignore_security_alert
-	err = executeSQL.Error
-
-	return
-}
-
-// INSERT INTO @@table (model_id, name, temperature, top_p, max_output_tokens, context, created_by, introduction, prologue, prompt, is_public) VALUES (@modelId, @name, @temperature, @topP, @maxOutputTokens, @context, @createdBy, @introduction, @prologue, @prompt, @isPublic) ON DUPLICATE KEY UPDATE name = @name, temperature = @temperature, top_p = @topP, max_output_tokens = @maxOutputTokens, context = @context, introduction = @introduction, prologue = @prologue, prompt = @prompt, is_public = @isPublic
-func (a appDo) Upsert(modelId int, name string, temperature float32, topP float32, maxOutputTokens int, context int, createdBy string, introduction string, prologue string, prompt string, isPublic bool) (err error) {
-	var params []interface{}
-
-	var generateSQL strings.Builder
-	params = append(params, modelId)
-	params = append(params, name)
-	params = append(params, temperature)
-	params = append(params, topP)
-	params = append(params, maxOutputTokens)
-	params = append(params, context)
-	params = append(params, createdBy)
-	params = append(params, introduction)
-	params = append(params, prologue)
-	params = append(params, prompt)
-	params = append(params, isPublic)
-	params = append(params, name)
-	params = append(params, temperature)
-	params = append(params, topP)
-	params = append(params, maxOutputTokens)
-	params = append(params, context)
-	params = append(params, introduction)
-	params = append(params, prologue)
-	params = append(params, prompt)
-	params = append(params, isPublic)
-	generateSQL.WriteString("INSERT INTO app (model_id, name, temperature, top_p, max_output_tokens, context, created_by, introduction, prologue, prompt, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = ?, temperature = ?, top_p = ?, max_output_tokens = ?, context = ?, introduction = ?, prologue = ?, prompt = ?, is_public = ? ")
 
 	var executeSQL *gorm.DB
 	executeSQL = a.UnderlyingDB().Exec(generateSQL.String(), params...) // ignore_security_alert
