@@ -134,8 +134,8 @@ func AppChatList(req *http.Request) (interface{}, *zerror) {
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
-
-	historyList, err := dao.ChatHistory.BatchGetRecentByUserID(appId, userId, chatId, page, pageSize)
+	offset := (page - 1) * pageSize
+	historyList, err := dao.ChatHistory.BatchGetRecentByUserID(appId, userId, chatId, offset, pageSize)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
