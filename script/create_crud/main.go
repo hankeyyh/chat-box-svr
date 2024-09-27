@@ -14,7 +14,7 @@ type AiModelQuery interface {
 	// SELECT * FROM @@table WHERE name = @name
 	GetByName(name string) ([]gen.T, error)
 	// SELECT * FROM @@table WHERE id = @id LIMIT 1
-	GetByID(id uint64) ([]gen.T, error)
+	GetByID(id uint64) (gen.T, error)
 	// SELECT * FROM @@table
 	All() ([]gen.T, error)
 }
@@ -25,7 +25,7 @@ type AppQuery interface {
 	// SELECT * FROM @@table WHERE model_id = @modelId
 	GetByModelID(modelId uint64) ([]gen.T, error)
 	// SELECT * FROM @@table WHERE id = @id LIMIT 1
-	GetByID(id uint64) ([]gen.T, error)
+	GetByID(id uint64) (gen.T, error)
 	// SELECT * FROM @@table WHERE created_by = @createdBy and id = @id LIMIT 1
 	GetByAuthorAndId(createdBy uint64, id uint64) (gen.T, error)
 	// SELECT * FROM @@table WHERE is_public = 1
@@ -38,7 +38,7 @@ type AppQuery interface {
 
 type ChatHistoryQuery interface {
 	// SELECT * FROM @@table WHERE id = @id LIMIT 1
-	GetByID(id uint64) ([]gen.T, error)
+	GetByID(id uint64) (gen.T, error)
 	// SELECT * FROM @@table WHERE parent_id = @parentId
 	GetByParentID(parentId uint64) ([]gen.T, error)
 	// SELECT * FROM @@table WHERE 

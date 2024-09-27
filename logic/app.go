@@ -46,11 +46,8 @@ func AppDetail(req *http.Request) (interface{}, *zerror) {
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
-	if len(app) == 0 {
-		return nil, nil
-	}
 
-	return app[0], nil
+	return app, nil
 }
 
 func AppUpsert(req *http.Request) (interface{}, *zerror) {
@@ -193,7 +190,7 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 		returnError(w, err)
 		return
 	}
-	aimodel, err := dao.AiModel.GetByID(app[0].ModelId)
+	aimodel, err := dao.AiModel.GetByID(app.ModelId)
 	if err != nil {
 		returnError(w, err)
 		return
@@ -201,7 +198,7 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 
 	// save to chat list
 	userChat := model.ChatHistory{
-		AppId:    app[0].Id,
+		AppId:    app.Id,
 		ParentId: nil,
 		UserId:   userId,
 		Sender: "user",
@@ -217,14 +214,14 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 	openaiConf.BaseURL = serverConf.BaseUrl
 	client := openai.NewClientWithConfig(openaiConf)
 	openaiReq := openai.ChatCompletionRequest{
-		Model:       aimodel[0].Name,
-		Temperature: app[0].Temperature,
-		TopP:        app[0].TopP,
-		MaxTokens:   int(app[0].MaxOutputTokens),
+		Model:       aimodel.Name,
+		Temperature: app.Temperature,
+		TopP:        app.TopP,
+		MaxTokens:   int(app.MaxOutputTokens),
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
-				Content: app[0].Prompt,
+				Content: app.Prompt,
 			},
 			{
 				Role:    openai.ChatMessageRoleUser,
@@ -276,7 +273,7 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 	}
 	// save assistant chat
 	assistantChat := model.ChatHistory{
-		AppId:    app[0].Id,
+		AppId:    app.Id,
 		ParentId: &userChat.Id,
 		UserId:   userId,
 		Sender: "assistant",

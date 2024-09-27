@@ -203,7 +203,7 @@ type IAppDo interface {
 
 	GetByName(name string) (result []model.App, err error)
 	GetByModelID(modelId uint64) (result []model.App, err error)
-	GetByID(id uint64) (result []model.App, err error)
+	GetByID(id uint64) (result model.App, err error)
 	GetByAuthorAndId(createdBy uint64, id uint64) (result model.App, err error)
 	AllPublic() (result []model.App, err error)
 	AllPrivateByAuthor(createdBy uint64) (result []model.App, err error)
@@ -241,7 +241,7 @@ func (a appDo) GetByModelID(modelId uint64) (result []model.App, err error) {
 }
 
 // SELECT * FROM @@table WHERE id = @id LIMIT 1
-func (a appDo) GetByID(id uint64) (result []model.App, err error) {
+func (a appDo) GetByID(id uint64) (result model.App, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
@@ -249,7 +249,7 @@ func (a appDo) GetByID(id uint64) (result []model.App, err error) {
 	generateSQL.WriteString("SELECT * FROM app WHERE id = ? LIMIT 1 ")
 
 	var executeSQL *gorm.DB
-	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return

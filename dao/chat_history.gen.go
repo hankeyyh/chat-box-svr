@@ -177,13 +177,13 @@ type IChatHistoryDo interface {
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
 
-	GetByID(id uint64) (result []model.ChatHistory, err error)
+	GetByID(id uint64) (result model.ChatHistory, err error)
 	GetByParentID(parentId uint64) (result []model.ChatHistory, err error)
 	BatchGetRecentByUserID(appId uint64, userId uint64, lastId uint64, offset int, limit int) (result []model.ChatHistory, err error)
 }
 
 // SELECT * FROM @@table WHERE id = @id LIMIT 1
-func (c chatHistoryDo) GetByID(id uint64) (result []model.ChatHistory, err error) {
+func (c chatHistoryDo) GetByID(id uint64) (result model.ChatHistory, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
@@ -191,7 +191,7 @@ func (c chatHistoryDo) GetByID(id uint64) (result []model.ChatHistory, err error
 	generateSQL.WriteString("SELECT * FROM chat_history WHERE id = ? LIMIT 1 ")
 
 	var executeSQL *gorm.DB
-	executeSQL = c.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	executeSQL = c.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return
