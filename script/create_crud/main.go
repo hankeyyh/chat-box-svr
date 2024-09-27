@@ -26,12 +26,12 @@ type AppQuery interface {
 	GetByModelID(modelId uint64) ([]gen.T, error)
 	// SELECT * FROM @@table WHERE id = @id LIMIT 1
 	GetByID(id uint64) ([]gen.T, error)
-	// SEECT * FROM @@table WHERE created_by = @createdBy
-	GetByAuthor(createdBy string) ([]gen.T, error)
+	// SELECT * FROM @@table WHERE created_by = @createdBy and id = @id LIMIT 1
+	GetByAuthorAndId(createdBy uint64, id uint64) (gen.T, error)
 	// SELECT * FROM @@table WHERE is_public = 1
 	AllPublic() ([]gen.T, error)
 	// SELECT * FROM @@table WHERE is_public = 0 AND created_by = @createdBy
-	AllPrivateByAuthor(createdBy string) ([]gen.T, error)
+	AllPrivateByAuthor(createdBy uint64) ([]gen.T, error)
 	// UPDATE @@table SET is_public = @isPublic WHERE id = @id
 	UpdateIsPublic(id uint64, isPublic bool) error
 }

@@ -35,7 +35,7 @@ func newApp(db *gorm.DB, opts ...gen.DOOption) app {
 	_app.TopP = field.NewFloat32(tableName, "top_p")
 	_app.MaxOutputTokens = field.NewInt(tableName, "max_output_tokens")
 	_app.Context = field.NewInt(tableName, "context")
-	_app.CreatedBy = field.NewString(tableName, "created_by")
+	_app.CreatedBy = field.NewUint64(tableName, "created_by")
 	_app.Introduction = field.NewString(tableName, "introduction")
 	_app.Prologue = field.NewString(tableName, "prologue")
 	_app.Prompt = field.NewString(tableName, "prompt")
@@ -59,7 +59,7 @@ type app struct {
 	TopP            field.Float32
 	MaxOutputTokens field.Int
 	Context         field.Int
-	CreatedBy       field.String
+	CreatedBy       field.Uint64
 	Introduction    field.String
 	Prologue        field.String
 	Prompt          field.String
@@ -89,7 +89,7 @@ func (a *app) updateTableName(table string) *app {
 	a.TopP = field.NewFloat32(table, "top_p")
 	a.MaxOutputTokens = field.NewInt(table, "max_output_tokens")
 	a.Context = field.NewInt(table, "context")
-	a.CreatedBy = field.NewString(table, "created_by")
+	a.CreatedBy = field.NewUint64(table, "created_by")
 	a.Introduction = field.NewString(table, "introduction")
 	a.Prologue = field.NewString(table, "prologue")
 	a.Prompt = field.NewString(table, "prompt")
@@ -204,9 +204,9 @@ type IAppDo interface {
 	GetByName(name string) (result []model.App, err error)
 	GetByModelID(modelId uint64) (result []model.App, err error)
 	GetByID(id uint64) (result []model.App, err error)
-	GetByAuthor(createdBy string) (result []model.App, err error)
+	GetByAuthorAndId(createdBy uint64, id uint64) (result model.App, err error)
 	AllPublic() (result []model.App, err error)
-	AllPrivateByAuthor(createdBy string) (result []model.App, err error)
+	AllPrivateByAuthor(createdBy uint64) (result []model.App, err error)
 	UpdateIsPublic(id uint64, isPublic bool) (err error)
 }
 
@@ -255,16 +255,17 @@ func (a appDo) GetByID(id uint64) (result []model.App, err error) {
 	return
 }
 
-// SEECT * FROM @@table WHERE created_by = @createdBy
-func (a appDo) GetByAuthor(createdBy string) (result []model.App, err error) {
+// SELECT * FROM @@table WHERE created_by = @createdBy and id = @id LIMIT 1
+func (a appDo) GetByAuthorAndId(createdBy uint64, id uint64) (result model.App, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, createdBy)
-	generateSQL.WriteString("SEECT * FROM app WHERE created_by = ? ")
+	params = append(params, id)
+	generateSQL.WriteString("SELECT * FROM app WHERE created_by = ? and id = ? LIMIT 1 ")
 
 	var executeSQL *gorm.DB
-	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return
@@ -283,7 +284,7 @@ func (a appDo) AllPublic() (result []model.App, err error) {
 }
 
 // SELECT * FROM @@table WHERE is_public = 0 AND created_by = @createdBy
-func (a appDo) AllPrivateByAuthor(createdBy string) (result []model.App, err error) {
+func (a appDo) AllPrivateByAuthor(createdBy uint64) (result []model.App, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder

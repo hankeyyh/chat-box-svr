@@ -24,12 +24,12 @@ func AppPublicList(req *http.Request) (interface{}, *zerror) {
 }
 
 func AppPrivateList(req *http.Request) (interface{}, *zerror) {
-	author := req.Form.Get("author")
-	if author == "" {
-		return nil, NewZError(-1, "author is required", nil)
+	userId, err := strconv.ParseUint(req.Header.Get("user_id"), 10, 64)
+	if userId == 0 || err != nil{
+		return nil, NewZError(-1, "user_id is required", err)
 	}
 	// TODO validate string format
-	apps, err := dao.App.AllPrivateByAuthor(author)
+	apps, err := dao.App.AllPrivateByAuthor(userId)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
@@ -84,28 +84,47 @@ func AppUpsert(req *http.Request) (interface{}, *zerror) {
 }
 
 func AppRelease(req *http.Request) (interface{}, *zerror) {
-	request := AppReleaseRequest{}
-	err := json.NewDecoder(req.Body).Decode(&request)
+	userId, err := strconv.ParseUint(req.Header.Get("user_id"), 10, 64)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
-	err = dao.App.UpdateIsPublic(request.AppId, true)
+	request := AppReleaseRequest{}
+	err = json.NewDecoder(req.Body).Decode(&request)
 	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
+	// check if app is created by user
+	app, err := dao.App.GetByAuthorAndId(userId, request.AppId)
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
+	app.IsPublic = 1
+	if err = dao.App.Save(&app); err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
 	return nil, nil
 }
 
 func AppUnrelease(req *http.Request) (interface{}, *zerror) {
+	userId, err := strconv.ParseUint(req.Header.Get("user_id"), 10, 64)
+	if err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
 	request := AppUnReleaseRequest{}
-	err := json.NewDecoder(req.Body).Decode(&request)
+	err = json.NewDecoder(req.Body).Decode(&request)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
-	err = dao.App.UpdateIsPublic(request.AppId, false)
+	// check if app is created by user
+	app, err := dao.App.GetByAuthorAndId(userId, request.AppId)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
+	app.IsPublic = 0
+	if err = dao.App.Save(&app); err != nil {
+		return nil, NewZError(-1, err.Error(), err)
+	}
+	
 	return nil, nil
 }
 
