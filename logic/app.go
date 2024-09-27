@@ -142,20 +142,27 @@ func AppChatList(req *http.Request) (interface{}, *zerror) {
 	return historyList, nil
 }
 
-// TODO changge to post json
 func AppChat(w http.ResponseWriter, req *http.Request) {
-	if err := req.ParseForm(); err != nil {
-		returnError(w, err)
+	if req.Header.Get("Content-Type") != "application/json" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Content-Type must be application/json"))
+		return
+	}
+	if req.Method != "POST" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Method must be POST"))
 		return
 	}
 
-	appIDStr := req.Form.Get("app_id")
-	appId, err := strconv.ParseUint(appIDStr, 10, 64)
+	chatReq := AppChatRequest{}
+	err := json.NewDecoder(req.Body).Decode(&chatReq)
 	if err != nil {
 		returnError(w, err)
 		return
 	}
-	content := req.Form.Get("content")
+	appId := chatReq.AppId
+	content := chatReq.Content
+
 	userId, err := strconv.ParseUint(req.Header.Get("user_id"), 10, 64)
 	if err != nil {
 		returnError(w, err)
