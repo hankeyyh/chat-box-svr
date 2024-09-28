@@ -158,6 +158,7 @@ func AppChatList(req *http.Request) (interface{}, *zerror) {
 	return historyList, nil
 }
 
+// TODO openaikey should send from client
 func AppChat(w http.ResponseWriter, req *http.Request) {
 	if req.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusBadRequest)
