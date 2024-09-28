@@ -5,7 +5,7 @@ base_url="https://api.b3n.fun/v1"
 
 [mysql]
 user_name="yuhanyang"
-password=""
+password="Hanke-110"
 address="127.0.0.1:3306"
 db_name = "chatbox"
 max_idle_conn=10
