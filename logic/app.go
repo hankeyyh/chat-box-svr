@@ -9,10 +9,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/sashabaranov/go-openai"
+
 	"github.com/hankeyyh/chat-box-svr/conf"
 	"github.com/hankeyyh/chat-box-svr/dao"
 	"github.com/hankeyyh/chat-box-svr/model"
-	"github.com/sashabaranov/go-openai"
 )
 
 func AppPublicList(req *http.Request) (interface{}, *zerror) {
@@ -24,9 +25,9 @@ func AppPublicList(req *http.Request) (interface{}, *zerror) {
 }
 
 func AppPrivateList(req *http.Request) (interface{}, *zerror) {
-	userId, err := strconv.ParseUint(req.Header.Get("user_id"), 10, 64)
-	if userId == 0 || err != nil{
-		return nil, NewZError(-1, "user_id is required", err)
+	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
+	if userId == 0 || err != nil {
+		return nil, NewZError(-1, "user-id is required", err)
 	}
 	// TODO validate string format
 	apps, err := dao.App.AllPrivateByAuthor(userId)
@@ -81,7 +82,7 @@ func AppUpsert(req *http.Request) (interface{}, *zerror) {
 }
 
 func AppRelease(req *http.Request) (interface{}, *zerror) {
-	userId, err := strconv.ParseUint(req.Header.Get("user_id"), 10, 64)
+	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
@@ -103,7 +104,7 @@ func AppRelease(req *http.Request) (interface{}, *zerror) {
 }
 
 func AppUnrelease(req *http.Request) (interface{}, *zerror) {
-	userId, err := strconv.ParseUint(req.Header.Get("user_id"), 10, 64)
+	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
@@ -121,7 +122,7 @@ func AppUnrelease(req *http.Request) (interface{}, *zerror) {
 	if err = dao.App.Save(&app); err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
-	
+
 	return nil, nil
 }
 
@@ -146,7 +147,7 @@ func AppChatList(req *http.Request) (interface{}, *zerror) {
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
-	userId, err := strconv.ParseUint(req.Header.Get("user_id"), 10, 64)
+	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
@@ -180,7 +181,7 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 	appId := chatReq.AppId
 	content := chatReq.Content
 
-	userId, err := strconv.ParseUint(req.Header.Get("user_id"), 10, 64)
+	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
 	if err != nil {
 		returnError(w, err)
 		return
@@ -202,8 +203,8 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 		AppId:    app.Id,
 		ParentId: nil,
 		UserId:   userId,
-		Sender: "user",
-		Content: content,
+		Sender:   "user",
+		Content:  content,
 	}
 	if err = dao.ChatHistory.Save(&userChat); err != nil {
 		returnError(w, err)
@@ -277,8 +278,8 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 		AppId:    app.Id,
 		ParentId: &userChat.Id,
 		UserId:   userId,
-		Sender: "assistant",
-		Content: assistantBuf.String(),
+		Sender:   "assistant",
+		Content:  assistantBuf.String(),
 	}
 	if err = dao.ChatHistory.Save(&assistantChat); err != nil {
 		returnError(w, err)
