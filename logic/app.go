@@ -159,6 +159,7 @@ func AppChatList(req *http.Request) (interface{}, *zerror) {
 	return historyList, nil
 }
 
+// TODO key from client must use https
 func AppChat(w http.ResponseWriter, req *http.Request) {
 	if req.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusBadRequest)
