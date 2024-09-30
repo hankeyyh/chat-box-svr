@@ -159,7 +159,6 @@ func AppChatList(req *http.Request) (interface{}, *zerror) {
 	return historyList, nil
 }
 
-// TODO openaikey should send from client
 func AppChat(w http.ResponseWriter, req *http.Request) {
 	if req.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -184,6 +183,11 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
 	if err != nil {
 		returnError(w, err)
+		return
+	}
+	aiKey := req.Header.Get("ai-key")
+	if aiKey == "" {
+		returnError(w, errors.New("ai-key is required"))
 		return
 	}
 
@@ -212,7 +216,7 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 	}
 
 	serverConf := conf.DefaultConf.ServerConf
-	openaiConf := openai.DefaultConfig(serverConf.Key)
+	openaiConf := openai.DefaultConfig(aiKey)
 	openaiConf.BaseURL = serverConf.BaseUrl
 	client := openai.NewClientWithConfig(openaiConf)
 	openaiReq := openai.ChatCompletionRequest{
