@@ -126,11 +126,19 @@ func AppUnrelease(req *http.Request) (interface{}, *zerror) {
 	return nil, nil
 }
 
-func AppChatList(req *http.Request) (interface{}, *zerror) {
-	appId, err := strconv.ParseUint(req.Form.Get("app_id"), 10, 64)
+func AppSessionList(req *http.Request) (interface{}, *zerror) {
+	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
+	if userId == 0 || err != nil {
+		return nil, NewZError(-1, "user-id is required", err)
+	}
+	sessions, err := dao.Session.GetByUserID(userId)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
+	return sessions, nil
+}
+
+func AppChatList(req *http.Request) (interface{}, *zerror) {
 	var chatId uint64
 	if req.Form.Get("chat_id") != "" {
 		var err error
@@ -147,12 +155,12 @@ func AppChatList(req *http.Request) (interface{}, *zerror) {
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
-	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
+	sessionId, err := strconv.ParseUint(req.Form.Get("session_id"), 10, 64)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}
 	offset := (page - 1) * pageSize
-	historyList, err := dao.ChatHistory.BatchGetRecentByUserID(appId, userId, chatId, offset, pageSize)
+	historyList, err := dao.ChatHistory.BatchGetRecentBySessionID(sessionId, chatId, offset, pageSize)
 	if err != nil {
 		return nil, NewZError(-1, err.Error(), err)
 	}

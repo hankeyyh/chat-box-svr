@@ -20,6 +20,7 @@ var (
 	AiModel     *aiModel
 	App         *app
 	ChatHistory *chatHistory
+	Session     *session
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
@@ -27,6 +28,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	AiModel = &Q.AiModel
 	App = &Q.App
 	ChatHistory = &Q.ChatHistory
+	Session = &Q.Session
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
@@ -35,6 +37,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		AiModel:     newAiModel(db, opts...),
 		App:         newApp(db, opts...),
 		ChatHistory: newChatHistory(db, opts...),
+		Session:     newSession(db, opts...),
 	}
 }
 
@@ -44,6 +47,7 @@ type Query struct {
 	AiModel     aiModel
 	App         app
 	ChatHistory chatHistory
+	Session     session
 }
 
 func (q *Query) Available() bool { return q.db != nil }
@@ -54,6 +58,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		AiModel:     q.AiModel.clone(db),
 		App:         q.App.clone(db),
 		ChatHistory: q.ChatHistory.clone(db),
+		Session:     q.Session.clone(db),
 	}
 }
 
@@ -71,6 +76,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		AiModel:     q.AiModel.replaceDB(db),
 		App:         q.App.replaceDB(db),
 		ChatHistory: q.ChatHistory.replaceDB(db),
+		Session:     q.Session.replaceDB(db),
 	}
 }
 
@@ -78,6 +84,7 @@ type queryCtx struct {
 	AiModel     IAiModelDo
 	App         IAppDo
 	ChatHistory IChatHistoryDo
+	Session     ISessionDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
@@ -85,6 +92,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		AiModel:     q.AiModel.WithContext(ctx),
 		App:         q.App.WithContext(ctx),
 		ChatHistory: q.ChatHistory.WithContext(ctx),
+		Session:     q.Session.WithContext(ctx),
 	}
 }
 

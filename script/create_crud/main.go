@@ -3,11 +3,12 @@ package main
 import (
 	"fmt"
 
-	"github.com/hankeyyh/chat-box-svr/conf"
-	"github.com/hankeyyh/chat-box-svr/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/gen"
 	"gorm.io/gorm"
+
+	"github.com/hankeyyh/chat-box-svr/conf"
+	"github.com/hankeyyh/chat-box-svr/model"
 )
 
 type AiModelQuery interface {
@@ -36,17 +37,24 @@ type AppQuery interface {
 	UpdateIsPublic(id uint64, isPublic bool) error
 }
 
+type SessionQuery interface {
+	// SELECT * FROM @@table WHERE user_id = @userId
+	GetByUserID(userId uint64) ([]gen.T, error)
+}
+
 type ChatHistoryQuery interface {
 	// SELECT * FROM @@table WHERE id = @id LIMIT 1
 	GetByID(id uint64) (gen.T, error)
 	// SELECT * FROM @@table WHERE parent_id = @parentId
 	GetByParentID(parentId uint64) ([]gen.T, error)
-	// SELECT * FROM @@table WHERE 
+	// SELECT * FROM @@table WHERE session_id=@sessionId
+	GetBySessionID(sessionId uint64) ([]gen.T, error)
+	// SELECT * FROM @@table WHERE
 	// {{if lastId != 0}}
-	// 	id < @lastId AND 
+	// 	id < @lastId AND
 	// {{end}}
-	// app_id = @appId AND user_id = @userId ORDER BY id DESC LIMIT @offset, @limit
-	BatchGetRecentByUserID(appId, userId uint64, lastId uint64, offset int, limit int) ([]gen.T, error)
+	// session_id = @sessionId ORDER BY id DESC LIMIT @offset, @limit
+	BatchGetRecentBySessionID(sessionId uint64, lastId uint64, offset int, limit int) ([]gen.T, error)
 }
 
 func main() {
@@ -68,6 +76,9 @@ func main() {
 		panic(err)
 	}
 	if err = createApi(gormdb, g, model.ChatHistory{}, func(ChatHistoryQuery) {}); err != nil {
+		panic(err)
+	}
+	if err = createApi(gormdb, g, model.Session{}, func(SessionQuery) {}); err != nil {
 		panic(err)
 	}
 }

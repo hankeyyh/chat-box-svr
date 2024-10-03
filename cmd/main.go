@@ -31,6 +31,7 @@ func main() {
 	http.HandleFunc("/app/upsert", logic.HandlePostJsonRequest(logic.AppUpsert))
 	http.HandleFunc("/app/release", logic.HandlePostJsonRequest(logic.AppRelease))
 	http.HandleFunc("/app/unrelease", logic.HandlePostJsonRequest(logic.AppUnrelease))
+	http.HandleFunc("/app/session-list", logic.HandleGetFormRequest(logic.AppSessionList))
 	http.HandleFunc("/app/chat-list", logic.HandleGetFormRequest(logic.AppChatList))
 	http.HandleFunc("/app/chat", logic.AppChat)
 

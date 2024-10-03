@@ -31,6 +31,7 @@ func newChatHistory(db *gorm.DB, opts ...gen.DOOption) chatHistory {
 	_chatHistory.Id = field.NewUint64(tableName, "id")
 	_chatHistory.ParentId = field.NewUint64(tableName, "parent_id")
 	_chatHistory.UserId = field.NewUint64(tableName, "user_id")
+	_chatHistory.SessionId = field.NewUint64(tableName, "session_id")
 	_chatHistory.AppId = field.NewUint64(tableName, "app_id")
 	_chatHistory.Sender = field.NewString(tableName, "sender")
 	_chatHistory.ErrNo = field.NewInt32(tableName, "err_no")
@@ -49,6 +50,7 @@ type chatHistory struct {
 	Id        field.Uint64
 	ParentId  field.Uint64
 	UserId    field.Uint64
+	SessionId field.Uint64
 	AppId     field.Uint64
 	Sender    field.String
 	ErrNo     field.Int32
@@ -73,6 +75,7 @@ func (c *chatHistory) updateTableName(table string) *chatHistory {
 	c.Id = field.NewUint64(table, "id")
 	c.ParentId = field.NewUint64(table, "parent_id")
 	c.UserId = field.NewUint64(table, "user_id")
+	c.SessionId = field.NewUint64(table, "session_id")
 	c.AppId = field.NewUint64(table, "app_id")
 	c.Sender = field.NewString(table, "sender")
 	c.ErrNo = field.NewInt32(table, "err_no")
@@ -94,10 +97,11 @@ func (c *chatHistory) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (c *chatHistory) fillFieldMap() {
-	c.fieldMap = make(map[string]field.Expr, 8)
+	c.fieldMap = make(map[string]field.Expr, 9)
 	c.fieldMap["id"] = c.Id
 	c.fieldMap["parent_id"] = c.ParentId
 	c.fieldMap["user_id"] = c.UserId
+	c.fieldMap["session_id"] = c.SessionId
 	c.fieldMap["app_id"] = c.AppId
 	c.fieldMap["sender"] = c.Sender
 	c.fieldMap["err_no"] = c.ErrNo
@@ -179,7 +183,8 @@ type IChatHistoryDo interface {
 
 	GetByID(id uint64) (result model.ChatHistory, err error)
 	GetByParentID(parentId uint64) (result []model.ChatHistory, err error)
-	BatchGetRecentByUserID(appId uint64, userId uint64, lastId uint64, offset int, limit int) (result []model.ChatHistory, err error)
+	GetBySessionID(sessionId uint64) (result []model.ChatHistory, err error)
+	BatchGetRecentBySessionID(sessionId uint64, lastId uint64, offset int, limit int) (result []model.ChatHistory, err error)
 }
 
 // SELECT * FROM @@table WHERE id = @id LIMIT 1
@@ -212,14 +217,29 @@ func (c chatHistoryDo) GetByParentID(parentId uint64) (result []model.ChatHistor
 	return
 }
 
+// SELECT * FROM @@table WHERE session_id=@sessionId
+func (c chatHistoryDo) GetBySessionID(sessionId uint64) (result []model.ChatHistory, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, sessionId)
+	generateSQL.WriteString("SELECT * FROM chat_history WHERE session_id=? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = c.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
 // SELECT * FROM @@table WHERE
 // {{if lastId != 0}}
 //
 //	id < @lastId AND
 //
 // {{end}}
-// app_id = @appId AND user_id = @userId ORDER BY id DESC LIMIT @offset, @limit
-func (c chatHistoryDo) BatchGetRecentByUserID(appId uint64, userId uint64, lastId uint64, offset int, limit int) (result []model.ChatHistory, err error) {
+// session_id = @sessionId ORDER BY id DESC LIMIT @offset, @limit
+func (c chatHistoryDo) BatchGetRecentBySessionID(sessionId uint64, lastId uint64, offset int, limit int) (result []model.ChatHistory, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
@@ -228,11 +248,10 @@ func (c chatHistoryDo) BatchGetRecentByUserID(appId uint64, userId uint64, lastI
 		params = append(params, lastId)
 		generateSQL.WriteString("id < ? AND ")
 	}
-	params = append(params, appId)
-	params = append(params, userId)
+	params = append(params, sessionId)
 	params = append(params, offset)
 	params = append(params, limit)
-	generateSQL.WriteString("app_id = ? AND user_id = ? ORDER BY id DESC LIMIT ?, ? ")
+	generateSQL.WriteString("session_id = ? ORDER BY id DESC LIMIT ?, ? ")
 
 	var executeSQL *gorm.DB
 	executeSQL = c.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
