@@ -4,10 +4,11 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/hankeyyh/chat-box-svr/conf"
-	"github.com/hankeyyh/chat-box-svr/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+
+	"github.com/hankeyyh/chat-box-svr/conf"
+	"github.com/hankeyyh/chat-box-svr/model"
 )
 
 var forceCreate = flag.Bool("force", false, "force create table")
@@ -30,6 +31,9 @@ func main() {
 		panic(err)
 	}
 	if err = createModel(gormdb, model.ChatHistory{}); err != nil {
+		panic(err)
+	}
+	if err = createModel(gormdb, model.Session{}); err != nil {
 		panic(err)
 	}
 }
