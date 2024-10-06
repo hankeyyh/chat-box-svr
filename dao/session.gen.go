@@ -166,6 +166,7 @@ type ISessionDo interface {
 	schema.Tabler
 
 	GetByUserID(userId uint64) (result []model.Session, err error)
+	GetByID(id uint64) (result model.Session, err error)
 }
 
 // SELECT * FROM @@table WHERE user_id = @userId
@@ -178,6 +179,21 @@ func (s sessionDo) GetByUserID(userId uint64) (result []model.Session, err error
 
 	var executeSQL *gorm.DB
 	executeSQL = s.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// SELECT * FROM @@table WHERE id = @id LIMIT 1
+func (s sessionDo) GetByID(id uint64) (result model.Session, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, id)
+	generateSQL.WriteString("SELECT * FROM session WHERE id = ? LIMIT 1 ")
+
+	var executeSQL *gorm.DB
+	executeSQL = s.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return

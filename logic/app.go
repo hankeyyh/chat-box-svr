@@ -185,6 +185,7 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 		returnError(w, err)
 		return
 	}
+	sessionId := chatReq.SessionId
 	appId := chatReq.AppId
 	content := chatReq.Content
 
@@ -197,6 +198,29 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 	if aiKey == "" {
 		returnError(w, errors.New("ai-key is required"))
 		return
+	}
+
+	// if no session, create one
+	var session model.Session
+	if sessionId == 0 {
+		session = model.Session{
+			UserId: userId,
+		}
+		if err = dao.Session.Create(&session); err != nil {
+			returnError(w, err)
+			return
+		}
+	} else {
+		// check if session belongs to user
+		session, err = dao.Session.GetByID(sessionId)
+		if err != nil {
+			returnError(w, err)
+			return
+		}
+		if session.UserId != userId {
+			returnError(w, errors.New("session not belongs to user"))
+			return
+		}
 	}
 
 	app, err := dao.App.GetByID(appId)
@@ -213,6 +237,7 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 	// save to chat list
 	userChat := model.ChatHistory{
 		AppId:    app.Id,
+		SessionId: session.Id,
 		ParentId: nil,
 		UserId:   userId,
 		Sender:   "user",
@@ -288,6 +313,7 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 	// save assistant chat
 	assistantChat := model.ChatHistory{
 		AppId:    app.Id,
+		SessionId: session.Id,
 		ParentId: &userChat.Id,
 		UserId:   userId,
 		Sender:   "assistant",

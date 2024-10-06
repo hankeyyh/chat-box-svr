@@ -81,6 +81,7 @@ type AppUpsertResponseData struct {
 }
 
 type AppChatRequest struct {
+	SessionId uint64 `json:"session_id"`
 	AppId uint64    `json:"app_id"`
 	Content string `json:"content"`
 }
