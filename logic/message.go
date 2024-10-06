@@ -68,7 +68,6 @@ type AppUpsertRequest struct {
 	Temperature     float32 `json:"temperature"`//控制模型回复的创造性和随机性。数值越高，模型的回复越有创造性
 	TopP            float32 `json:"top_p"`//控制模型回复时候选内容的多少。数值太低模型的回复会比较固定，数值太高模型的回复会比较放飞自我
 	MaxOutputTokens int     `json:"max_output_tokens"`//控制模型一次回复的最大回复长度
-	Context         int     `json:"context"` 			// 上下文数量
 	CreatedBy       uint64  `json:"created_by"`
 	Introduction    string  `json:"introduction"`
 	Prologue        string  `json:"prologue"` 			// 开场白

@@ -183,7 +183,7 @@ type IChatHistoryDo interface {
 
 	GetByID(id uint64) (result model.ChatHistory, err error)
 	GetByParentID(parentId uint64) (result []model.ChatHistory, err error)
-	GetBySessionID(sessionId uint64) (result []model.ChatHistory, err error)
+	GetAllBySessionID(sessionId uint64) (result []model.ChatHistory, err error)
 	BatchGetRecentBySessionID(sessionId uint64, lastId uint64, offset int, limit int) (result []model.ChatHistory, err error)
 }
 
@@ -217,13 +217,13 @@ func (c chatHistoryDo) GetByParentID(parentId uint64) (result []model.ChatHistor
 	return
 }
 
-// SELECT * FROM @@table WHERE session_id=@sessionId
-func (c chatHistoryDo) GetBySessionID(sessionId uint64) (result []model.ChatHistory, err error) {
+// SELECT * FROM @@table WHERE session_id=@sessionId ORDER BY created_at
+func (c chatHistoryDo) GetAllBySessionID(sessionId uint64) (result []model.ChatHistory, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, sessionId)
-	generateSQL.WriteString("SELECT * FROM chat_history WHERE session_id=? ")
+	generateSQL.WriteString("SELECT * FROM chat_history WHERE session_id=? ORDER BY created_at ")
 
 	var executeSQL *gorm.DB
 	executeSQL = c.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
@@ -238,7 +238,7 @@ func (c chatHistoryDo) GetBySessionID(sessionId uint64) (result []model.ChatHist
 //	id < @lastId AND
 //
 // {{end}}
-// session_id = @sessionId ORDER BY id DESC LIMIT @offset, @limit
+// session_id = @sessionId ORDER BY created_at DESC LIMIT @offset, @limit
 func (c chatHistoryDo) BatchGetRecentBySessionID(sessionId uint64, lastId uint64, offset int, limit int) (result []model.ChatHistory, err error) {
 	var params []interface{}
 
@@ -251,7 +251,7 @@ func (c chatHistoryDo) BatchGetRecentBySessionID(sessionId uint64, lastId uint64
 	params = append(params, sessionId)
 	params = append(params, offset)
 	params = append(params, limit)
-	generateSQL.WriteString("session_id = ? ORDER BY id DESC LIMIT ?, ? ")
+	generateSQL.WriteString("session_id = ? ORDER BY created_at DESC LIMIT ?, ? ")
 
 	var executeSQL *gorm.DB
 	executeSQL = c.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert

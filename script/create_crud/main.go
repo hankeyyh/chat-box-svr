@@ -49,13 +49,13 @@ type ChatHistoryQuery interface {
 	GetByID(id uint64) (gen.T, error)
 	// SELECT * FROM @@table WHERE parent_id = @parentId
 	GetByParentID(parentId uint64) ([]gen.T, error)
-	// SELECT * FROM @@table WHERE session_id=@sessionId
-	GetBySessionID(sessionId uint64) ([]gen.T, error)
+	// SELECT * FROM @@table WHERE session_id=@sessionId ORDER BY created_at
+	GetAllBySessionID(sessionId uint64) ([]gen.T, error)
 	// SELECT * FROM @@table WHERE
 	// {{if lastId != 0}}
 	// 	id < @lastId AND
 	// {{end}}
-	// session_id = @sessionId ORDER BY id DESC LIMIT @offset, @limit
+	// session_id = @sessionId ORDER BY created_at DESC LIMIT @offset, @limit
 	BatchGetRecentBySessionID(sessionId uint64, lastId uint64, offset int, limit int) ([]gen.T, error)
 }
 

@@ -9,7 +9,6 @@ type App struct {
 	Temperature float32 `json:"temperature" gorm:"column:temperature;type:float;not null;default:0;precision:3;scale:2;comment:temperature"` 
 	TopP float32 `json:"top_p" gorm:"column:top_p;type:float;not null;default:0;precision:3;scale:2;comment:top_p"`
 	MaxOutputTokens int `json:"max_output_tokens" gorm:"column:max_output_tokens;type:int(11);not null;default:0;comment:最大输出token"`
-	Context int `json:"context" gorm:"column:context;type:int(11);not null;default:0;comment:上下文数量"`
 	CreatedBy uint64 `json:"created_by" gorm:"column:created_by;type:bigint(20) unsigned;not null;default:0;comment:创建者uid,0:未定义,1:system"`
 	Introduction string `json:"introduction" gorm:"column:introduction;type:varchar(500);not null;default:'';size:500;comment:介绍"`
 	Prologue string `json:"prologue" gorm:"column:prologue;type:text;not null;comment:开场白"`
