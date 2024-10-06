@@ -15,6 +15,7 @@ import (
 	"github.com/hankeyyh/chat-box-svr/constant"
 	"github.com/hankeyyh/chat-box-svr/dao"
 	"github.com/hankeyyh/chat-box-svr/model"
+	"github.com/hankeyyh/chat-box-svr/util/log"
 )
 
 func AppPublicList(req *http.Request) (interface{}, *zerror) {
@@ -199,6 +200,7 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 		returnError(w, errors.New("ai-key is required"))
 		return
 	}
+	log.Infof("request, uid: %+v, req: %+v", userId, chatReq)
 
 	// if no session, create one
 	var session model.Session
@@ -292,6 +294,7 @@ func AppChat(w http.ResponseWriter, req *http.Request) {
 				End:     end,
 			},
 		}
+		log.Infof("response: %+v", rsp)
 		json.NewEncoder(w).Encode(rsp)
 		w.(http.Flusher).Flush()
 		if end {
