@@ -34,7 +34,6 @@ func newApp(db *gorm.DB, opts ...gen.DOOption) app {
 	_app.Temperature = field.NewFloat32(tableName, "temperature")
 	_app.TopP = field.NewFloat32(tableName, "top_p")
 	_app.MaxOutputTokens = field.NewInt(tableName, "max_output_tokens")
-	_app.Context = field.NewInt(tableName, "context")
 	_app.CreatedBy = field.NewUint64(tableName, "created_by")
 	_app.Introduction = field.NewString(tableName, "introduction")
 	_app.Prologue = field.NewString(tableName, "prologue")
@@ -58,7 +57,6 @@ type app struct {
 	Temperature     field.Float32
 	TopP            field.Float32
 	MaxOutputTokens field.Int
-	Context         field.Int
 	CreatedBy       field.Uint64
 	Introduction    field.String
 	Prologue        field.String
@@ -88,7 +86,6 @@ func (a *app) updateTableName(table string) *app {
 	a.Temperature = field.NewFloat32(table, "temperature")
 	a.TopP = field.NewFloat32(table, "top_p")
 	a.MaxOutputTokens = field.NewInt(table, "max_output_tokens")
-	a.Context = field.NewInt(table, "context")
 	a.CreatedBy = field.NewUint64(table, "created_by")
 	a.Introduction = field.NewString(table, "introduction")
 	a.Prologue = field.NewString(table, "prologue")
@@ -112,14 +109,13 @@ func (a *app) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (a *app) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 14)
+	a.fieldMap = make(map[string]field.Expr, 13)
 	a.fieldMap["id"] = a.Id
 	a.fieldMap["model_id"] = a.ModelId
 	a.fieldMap["name"] = a.Name
 	a.fieldMap["temperature"] = a.Temperature
 	a.fieldMap["top_p"] = a.TopP
 	a.fieldMap["max_output_tokens"] = a.MaxOutputTokens
-	a.fieldMap["context"] = a.Context
 	a.fieldMap["created_by"] = a.CreatedBy
 	a.fieldMap["introduction"] = a.Introduction
 	a.fieldMap["prologue"] = a.Prologue

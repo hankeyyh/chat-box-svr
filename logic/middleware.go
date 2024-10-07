@@ -39,8 +39,11 @@ func HandleGetFormRequest(handleFunc RequestHandleFunc) func(http.ResponseWriter
 			Data:    data,
 		}
 		elapsed := time.Since(st)
-		log.Infof("response: %+v, duration: %s", rsp, elapsed.String())
-
+		if zerr.GetCode() != 0 {
+			log.Errorf("response: %+v, duration: %s", rsp, elapsed.String())
+		} else {
+			log.Infof("response: %+v, duration: %s", rsp, elapsed.String())
+		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(rsp)
 	}
@@ -70,7 +73,7 @@ func HandlePostJsonRequest(handleFunc RequestHandleFunc) func(http.ResponseWrite
 		}
 		elapsed := time.Since(st)
 		log.Infof("response: %+v, duration: %s", rsp, elapsed.String())
-		
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(rsp)
 	}

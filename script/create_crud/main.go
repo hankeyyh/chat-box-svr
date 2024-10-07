@@ -55,7 +55,7 @@ type ChatHistoryQuery interface {
 	// {{if lastId != 0}}
 	// 	id < @lastId AND
 	// {{end}}
-	// session_id = @sessionId ORDER BY created_at DESC LIMIT @offset, @limit
+	// session_id = @sessionId ORDER BY created_at LIMIT @offset, @limit
 	BatchGetRecentBySessionID(sessionId uint64, lastId uint64, offset int, limit int) ([]gen.T, error)
 }
 
