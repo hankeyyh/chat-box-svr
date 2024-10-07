@@ -18,22 +18,24 @@ func main() {
 	// capture signal
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
-	go func ()  {
+	go func() {
 		<-c
 		fmt.Println("Server closing...")
 		os.Exit(0)
 	}()
 
 	http.HandleFunc("/model/list", logic.HandleGetFormRequest(logic.ModelList))
+	
 	http.HandleFunc("/app/public-list", logic.HandleGetFormRequest(logic.AppPublicList))
 	http.HandleFunc("/app/private-list", logic.HandleGetFormRequest(logic.AppPrivateList))
 	http.HandleFunc("/app/detail", logic.HandleGetFormRequest(logic.AppDetail))
 	http.HandleFunc("/app/upsert", logic.HandlePostJsonRequest(logic.AppUpsert))
 	http.HandleFunc("/app/release", logic.HandlePostJsonRequest(logic.AppRelease))
 	http.HandleFunc("/app/unrelease", logic.HandlePostJsonRequest(logic.AppUnrelease))
-	http.HandleFunc("/app/session-list", logic.HandleGetFormRequest(logic.AppSessionList))
-	http.HandleFunc("/app/chat-list", logic.HandleGetFormRequest(logic.AppChatList))
-	http.HandleFunc("/app/chat", logic.AppChat)
+	
+	http.HandleFunc("/session/list", logic.HandleGetFormRequest(logic.SessionList))
+	http.HandleFunc("/session/chat-list", logic.HandleGetFormRequest(logic.SessionChatList))
+	http.HandleFunc("/session/chat", logic.SessionChat)
 
 	fmt.Printf("Server started at %s\n", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
