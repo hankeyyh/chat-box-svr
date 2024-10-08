@@ -16,45 +16,94 @@ import (
 	"github.com/hankeyyh/chat-box-svr/dao"
 	"github.com/hankeyyh/chat-box-svr/model"
 	"github.com/hankeyyh/chat-box-svr/util/log"
+	"github.com/hankeyyh/chat-box-svr/zerror"
 )
 
-func SessionList(req *http.Request) (interface{}, *zerror) {
+func SessionList(req *http.Request) (interface{}, zerror.Zerror) {
 	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
 	if userId == 0 || err != nil {
-		return nil, NewZError(-1, "user-id is required", err)
+		return nil, zerror.NewZError(-1, "user-id is required", err)
 	}
 	sessions, err := dao.Session.GetByUserID(userId)
 	if err != nil {
-		return nil, NewZError(-1, err.Error(), err)
+		return nil, zerror.NewZError(-1, err.Error(), err)
 	}
 	return sessions, nil
 }
 
-func SessionChatList(req *http.Request) (interface{}, *zerror) {
+func SessionCreate(req *http.Request) (interface{}, zerror.Zerror) {
+	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
+	if userId == 0 || err != nil {
+		return nil, zerror.NewZError(-1, "user-id is required", err)
+	}
+	var sessionCreateReq SessionCreateRequest
+	if err = json.NewDecoder(req.Body).Decode(&sessionCreateReq); err != nil {
+		return nil, zerror.NewZError(-1, err.Error(), err)
+	}
+	// 创建session
+	session := model.Session{
+		UserId: userId,
+		Name:   sessionCreateReq.Name,
+	}
+	if err = dao.Session.Create(&session); err != nil {
+		return nil, zerror.NewZError(-1, err.Error(), err)
+	}
+	return session, nil
+}
+
+func SessionUpdate(req *http.Request) (interface{}, zerror.Zerror) {
+	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
+	if userId == 0 || err != nil {
+		return nil, zerror.NewZError(-1, "user-id is required", err)
+	}
+	var sessionUpdateReq SessionUpdateRequest
+	if err = json.NewDecoder(req.Body).Decode(&sessionUpdateReq); err != nil {
+		return nil, zerror.NewZError(-1, err.Error(), err)
+	}
+	if sessionUpdateReq.Id == 0 {
+		return nil, zerror.NewZError(-1, "session_id is required", nil)
+	}
+	// 检查session是否属于用户
+	session, err := dao.Session.GetByID(sessionUpdateReq.Id)
+	if err != nil {
+		return nil, zerror.NewZError(-1, err.Error(), err)
+	}
+	if session.UserId != userId {
+		return nil, zerror.NewZError(-1, "session not belongs to user", nil)
+	}
+	// 更新
+	session.Name = sessionUpdateReq.Name
+	if err = dao.Session.Save(&session); err != nil {
+		return nil, zerror.NewZError(-1, err.Error(), err)
+	}
+	return session, nil
+}
+
+func SessionChatList(req *http.Request) (interface{}, zerror.Zerror) {
 	var chatId uint64
 	if req.Form.Get("chat_id") != "" {
 		var err error
 		chatId, err = strconv.ParseUint(req.Form.Get("chat_id"), 10, 64)
 		if err != nil {
-			return nil, NewZError(-1, err.Error(), err)
+			return nil, zerror.NewZError(-1, err.Error(), err)
 		}
 	}
 	page, err := strconv.Atoi(req.Form.Get("page"))
 	if err != nil {
-		return nil, NewZError(-1, err.Error(), err)
+		return nil, zerror.NewZError(-1, err.Error(), err)
 	}
 	pageSize, err := strconv.Atoi(req.Form.Get("page_size"))
 	if err != nil {
-		return nil, NewZError(-1, err.Error(), err)
+		return nil, zerror.NewZError(-1, err.Error(), err)
 	}
 	sessionId, err := strconv.ParseUint(req.Form.Get("session_id"), 10, 64)
 	if err != nil {
-		return nil, NewZError(-1, err.Error(), err)
+		return nil, zerror.NewZError(-1, err.Error(), err)
 	}
 	offset := (page - 1) * pageSize
 	historyList, err := dao.ChatHistory.BatchGetRecentBySessionID(sessionId, chatId, offset, pageSize)
 	if err != nil {
-		return nil, NewZError(-1, err.Error(), err)
+		return nil, zerror.NewZError(-1, err.Error(), err)
 	}
 	return historyList, nil
 }

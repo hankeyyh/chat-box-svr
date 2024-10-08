@@ -25,15 +25,17 @@ func main() {
 	}()
 
 	http.HandleFunc("/model/list", logic.HandleGetFormRequest(logic.ModelList))
-	
+
 	http.HandleFunc("/app/public-list", logic.HandleGetFormRequest(logic.AppPublicList))
 	http.HandleFunc("/app/private-list", logic.HandleGetFormRequest(logic.AppPrivateList))
 	http.HandleFunc("/app/detail", logic.HandleGetFormRequest(logic.AppDetail))
 	http.HandleFunc("/app/upsert", logic.HandlePostJsonRequest(logic.AppUpsert))
 	http.HandleFunc("/app/release", logic.HandlePostJsonRequest(logic.AppRelease))
 	http.HandleFunc("/app/unrelease", logic.HandlePostJsonRequest(logic.AppUnrelease))
-	
+
 	http.HandleFunc("/session/list", logic.HandleGetFormRequest(logic.SessionList))
+	http.HandleFunc("/session/create", logic.HandlePostJsonRequest(logic.SessionCreate))
+	http.HandleFunc("/session/update", logic.HandlePostJsonRequest(logic.SessionUpdate))
 	http.HandleFunc("/session/chat-list", logic.HandleGetFormRequest(logic.SessionChatList))
 	http.HandleFunc("/session/chat", logic.SessionChat)
 
