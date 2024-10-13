@@ -64,6 +64,7 @@ func AppUpsert(req *http.Request) (interface{}, zerror.Zerror) {
 		Prompt:          request.Prompt,
 		IsPublic:        request.IsPublic,
 		ShowPrompt: 	request.ShowPrompt,
+		Icon:            request.Icon,
 	}
 	err = dao.App.Save(&app)
 	if err != nil {

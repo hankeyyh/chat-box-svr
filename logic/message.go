@@ -32,6 +32,7 @@ type AppUpsertRequest struct {
 	Prompt          string  `json:"prompt"`
 	IsPublic        int8    `json:"is_public"`
 	ShowPrompt      int8    `json:"show_prompt"`
+	Icon            string  `json:"icon"`
 }
 
 type AppUpsertResponseData struct {

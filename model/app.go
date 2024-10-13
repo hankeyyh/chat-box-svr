@@ -15,6 +15,7 @@ type App struct {
 	Prompt string `json:"prompt" gorm:"column:prompt;type:text;not null;comment:prompt"`
 	IsPublic int8 `json:"is_public" gorm:"column:is_public;type:tinyint(2);not null;default:0;precision:2;scale:0;comment:是否公开"`
 	ShowPrompt int8 `json:"show_prompt" gorm:"column:show_prompt;type:tinyint(2);not null;default:0;comment:是否展示prompt"`
+	Icon string `json:"icon" gorm:"column:icon;type:varchar(500);not null;default:'';size:500;comment:图标"`
 	CreatedAt time.Time `json:"-" gorm:"column:created_at;type:timestamp;not null;default:CURRENT_TIMESTAMP;autoCreateTime;<-:create;comment:创建时间"`
 	UpdatedAt time.Time `json:"-" gorm:"column:updated_at;type:timestamp ON UPDATE CURRENT_TIMESTAMP;not null;default:CURRENT_TIMESTAMP;autoUpdateTime;comment:更新时间"`
 }
