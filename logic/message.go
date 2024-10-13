@@ -31,6 +31,7 @@ type AppUpsertRequest struct {
 	Prologue        string  `json:"prologue"` // 开场白
 	Prompt          string  `json:"prompt"`
 	IsPublic        int8    `json:"is_public"`
+	ShowPrompt      int8    `json:"show_prompt"`
 }
 
 type AppUpsertResponseData struct {
@@ -42,7 +43,6 @@ type AppChatRequest struct {
 	AppId     uint64 `json:"app_id"`
 	Content   string `json:"content"`
 }
-
 
 type SessionCreateRequest struct {
 	Name string `json:"name"`
