@@ -10,3 +10,6 @@ address="127.0.0.1:3306"
 db_name = "chatbox"
 max_idle_conn=10
 max_open_conn=100
+
+[chat]
+default_app_id=12 

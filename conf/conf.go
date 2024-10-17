@@ -5,6 +5,7 @@ import "github.com/BurntSushi/toml"
 type Conf struct {
 	MysqlConf mySqlConf `toml:"mysql"`
 	ServerConf serverConf `toml:"server"`
+	ChatConf ChatConf `toml:"chat"`
 }
 
 type serverConf struct {
@@ -20,6 +21,10 @@ type mySqlConf struct {
 	DbName string `toml:"db_name"`
 	MaxIdleConn int `toml:"max_idle_conn"`
 	MaxOpenConn int `toml:"max_open_conn"`
+}
+
+type ChatConf struct {
+	DefaultAppId uint64 `toml:"default_app_id"`
 }
 
 var DefaultConf Conf

@@ -129,6 +129,9 @@ func SessionChat(w http.ResponseWriter, req *http.Request) {
 	sessionId := chatReq.SessionId
 	appId := chatReq.AppId
 	content := chatReq.Content
+	if appId == 0 {
+		appId = conf.DefaultConf.ChatConf.DefaultAppId
+	}
 
 	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
 	if err != nil {
