@@ -216,6 +216,7 @@ func SessionChat(w http.ResponseWriter, req *http.Request) {
 
 	// write stream to buffer
 	var assistantBuf bytes.Buffer
+	lineBuf := &SSEBuffer{}
 	for {
 		openaiRsp, err := stream.Recv()
 		if err != nil && !errors.Is(err, io.EOF) {
@@ -238,7 +239,7 @@ func SessionChat(w http.ResponseWriter, req *http.Request) {
 			},
 		}
 		log.Infof("response: %+v", rsp)
-		json.NewEncoder(w).Encode(rsp)
+		w.Write(lineBuf.EncodeJson(rsp))
 		w.(http.Flusher).Flush()
 		if end {
 			break
@@ -257,6 +258,20 @@ func SessionChat(w http.ResponseWriter, req *http.Request) {
 		returnError(w, err)
 		return
 	}
+}
+
+type SSEBuffer struct {
+	bytes.Buffer
+}
+
+func (sb *SSEBuffer) EncodeJson(v interface{}) []byte {
+	sb.WriteString("data: ")
+	json.NewEncoder(sb).Encode(v)
+	// json.Encode 会在末尾添加\n，这里再添加一个\n，以符合SSE消息格式
+	sb.WriteByte('\n')
+	result := sb.Bytes()
+	sb.Reset()
+	return result
 }
 
 func buildChatCompletionRequest(aiModel model.AiModel, app model.App, session model.Session) (*openai.ChatCompletionRequest, error) {
