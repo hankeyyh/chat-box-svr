@@ -108,120 +108,83 @@ func SessionChatList(req *http.Request) (interface{}, zerror.Zerror) {
 	return historyList, nil
 }
 
-func SessionChat(w http.ResponseWriter, req *http.Request) {
-	if req.Header.Get("Content-Type") != "application/json" {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Content-Type must be application/json"))
-		return
-	}
-	if req.Method != "POST" {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Method must be POST"))
-		return
-	}
-
-	chatReq := AppChatRequest{}
-	err := json.NewDecoder(req.Body).Decode(&chatReq)
-	if err != nil {
-		returnError(w, err)
-		return
-	}
-	sessionId := chatReq.SessionId
-	appId := chatReq.AppId
-	content := chatReq.Content
-	if appId == 0 {
-		appId = conf.DefaultConf.ChatConf.DefaultAppId
-	}
-
+// assistant stream message
+func SessionStream(w http.ResponseWriter, req *http.Request) {
+	sseBuf := &SSEBuffer{}
+	req.ParseForm()
 	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
 	if err != nil {
-		returnError(w, err)
+		w.Write(sseBuf.EncodeJson(Response{Code: -1, Message: err.Error(), Data: nil}))
 		return
 	}
 	aiKey := req.Header.Get("ai-key")
 	if aiKey == "" {
-		returnError(w, errors.New("ai-key is required"))
+		w.Write(sseBuf.EncodeJson(Response{Code: -1, Message: "ai-key is required", Data: nil}))
 		return
 	}
-	log.Infof("request, uid: %+v, req: %+v", userId, chatReq)
-
-	// if no session, create one
-	var session model.Session
-	if sessionId == 0 {
-		session = model.Session{
-			UserId: userId,
-		}
-		if err = dao.Session.Create(&session); err != nil {
-			returnError(w, err)
-			return
-		}
-	} else {
-		// check if session belongs to user
-		session, err = dao.Session.GetByID(sessionId)
-		if err != nil {
-			returnError(w, err)
-			return
-		}
-		if session.UserId != userId {
-			returnError(w, errors.New("session not belongs to user"))
-			return
-		}
-	}
-
-	app, err := dao.App.GetByID(appId)
+	// parse request
+	chatId, err := strconv.ParseUint(req.Form.Get("chat_id"), 10, 64)
 	if err != nil {
-		returnError(w, err)
+		w.Write(sseBuf.EncodeJson(Response{Code: -1, Message: err.Error(), Data: nil}))
 		return
 	}
+	// load chat
+	chat, err := dao.ChatHistory.GetByID(chatId)
+	if err != nil {
+		w.Write(sseBuf.EncodeJson(Response{Code: -1, Message: err.Error(), Data: nil}))
+		return
+	}
+	if chat.UserId != userId {
+		w.Write(sseBuf.EncodeJson(Response{Code: -1, Message: "chat not belongs to user", Data: nil}))
+		return
+	}
+	// load session
+	session, err := dao.Session.GetByID(chat.SessionId)
+	if err != nil {
+		w.Write(sseBuf.EncodeJson(Response{Code: -1, Message: err.Error(), Data: nil}))
+		return
+	}
+	// load app
+	app, err := dao.App.GetByID(chat.AppId)
+	if err != nil {
+		w.Write(sseBuf.EncodeJson(Response{Code: -1, Message: err.Error(), Data: nil}))
+		return
+	}
+	// load model
 	aimodel, err := dao.AiModel.GetByID(app.ModelId)
 	if err != nil {
-		returnError(w, err)
+		w.Write(sseBuf.EncodeJson(Response{Code: -1, Message: err.Error(), Data: nil}))
 		return
 	}
-
-	// save to chat list
-	userChat := model.ChatHistory{
-		AppId:     app.Id,
-		SessionId: session.Id,
-		ParentId:  nil,
-		UserId:    userId,
-		Sender:    "user",
-		Content:   content,
-	}
-	if err = dao.ChatHistory.Save(&userChat); err != nil {
-		returnError(w, err)
-		return
-	}
-
+	// build openai request
 	serverConf := conf.DefaultConf.ServerConf
 	openaiConf := openai.DefaultConfig(aiKey)
 	openaiConf.BaseURL = serverConf.BaseUrl
 	client := openai.NewClientWithConfig(openaiConf)
 	openaiReq, err := buildChatCompletionRequest(aimodel, app, session)
 	if err != nil {
-		returnError(w, err)
+		w.Write(sseBuf.EncodeJson(Response{Code: -1, Message: err.Error(), Data: nil}))
 		return
 	}
 	stream, err := client.CreateChatCompletionStream(context.Background(), *openaiReq)
 	if err != nil {
-		returnError(w, err)
+		w.Write(sseBuf.EncodeJson(Response{Code: -1, Message: err.Error(), Data: nil}))
 		return
 	}
 	defer stream.Close()
 
+	// write stream header
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 	w.(http.Flusher).Flush()
 
-	// write stream to buffer
+	// write stream rsp to buffer
 	var assistantBuf bytes.Buffer
-	lineBuf := &SSEBuffer{}
 	for {
 		openaiRsp, err := stream.Recv()
 		if err != nil && !errors.Is(err, io.EOF) {
-			returnError(w, err)
-			w.(http.Flusher).Flush()
+			w.Write(sseBuf.EncodeJson(Response{Code: -1, Message: err.Error(), Data: nil}))
 			return
 		}
 		end := errors.Is(err, io.EOF)
@@ -239,8 +202,7 @@ func SessionChat(w http.ResponseWriter, req *http.Request) {
 			},
 		}
 		log.Infof("response: %+v", rsp)
-		w.Write(lineBuf.EncodeJson(rsp))
-		w.(http.Flusher).Flush()
+		w.Write(sseBuf.EncodeJson(rsp))
 		if end {
 			break
 		}
@@ -249,15 +211,71 @@ func SessionChat(w http.ResponseWriter, req *http.Request) {
 	assistantChat := model.ChatHistory{
 		AppId:     app.Id,
 		SessionId: session.Id,
-		ParentId:  &userChat.Id,
+		ParentId:  &chat.Id,
 		UserId:    userId,
 		Sender:    "assistant",
 		Content:   assistantBuf.String(),
 	}
 	if err = dao.ChatHistory.Save(&assistantChat); err != nil {
-		returnError(w, err)
+		w.Write(sseBuf.EncodeJson(Response{Code: -1, Message: err.Error(), Data: nil}))
 		return
 	}
+}
+
+func SessionChat(req *http.Request) (interface{}, zerror.Zerror) {
+	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
+	if err != nil {
+		return nil, zerror.NewZError(-1, err.Error(), err)
+	}
+
+	chatReq := SessionChatRequest{}
+	if err = json.NewDecoder(req.Body).Decode(&chatReq); err != nil {
+		return nil, zerror.NewZError(-1, err.Error(), err)
+	}
+	sessionId := chatReq.SessionId
+	appId := chatReq.AppId
+	content := chatReq.Content
+	if appId == 0 {
+		appId = conf.DefaultConf.ChatConf.DefaultAppId
+	}
+	// if no session, create one
+	var session model.Session
+	if sessionId == 0 {
+		session = model.Session{
+			UserId: userId,
+		}
+		if err = dao.Session.Create(&session); err != nil {
+			return nil, zerror.NewZError(-1, err.Error(), err)
+		}
+	} else {
+		// check if session belongs to user
+		session, err = dao.Session.GetByID(sessionId)
+		if err != nil {
+			return nil, zerror.NewZError(-1, err.Error(), err)
+		}
+		if session.UserId != userId {
+			return nil, zerror.NewZError(-1, "session not belongs to user", nil)
+		}
+	}
+
+	app, err := dao.App.GetByID(appId)
+	if err != nil {
+		return nil, zerror.NewZError(-1, err.Error(), err)
+	}
+	// save to chat list
+	userChat := model.ChatHistory{
+		AppId:     app.Id,
+		SessionId: session.Id,
+		ParentId:  nil,
+		UserId:    userId,
+		Sender:    "user",
+		Content:   content,
+	}
+	if err = dao.ChatHistory.Save(&userChat); err != nil {
+		return nil, zerror.NewZError(-1, err.Error(), err)
+	}
+
+	return SessionChatResponseData{ChatId: userChat.Id}, nil
 }
 
 type SSEBuffer struct {

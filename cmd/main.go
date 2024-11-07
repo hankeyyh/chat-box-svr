@@ -37,7 +37,8 @@ func main() {
 	http.HandleFunc("/session/create", logic.HandlePostJsonRequest(logic.SessionCreate))
 	http.HandleFunc("/session/update", logic.HandlePostJsonRequest(logic.SessionUpdate))
 	http.HandleFunc("/session/chat-list", logic.HandleGetFormRequest(logic.SessionChatList))
-	http.HandleFunc("/session/chat", logic.SessionChat)
+	http.HandleFunc("/session/chat", logic.HandlePostJsonRequest(logic.SessionChat)) // user message
+	http.HandleFunc("/session/stream", logic.SessionStream)
 
 	fmt.Printf("Server started at %s\n", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))

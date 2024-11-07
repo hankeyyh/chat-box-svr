@@ -39,10 +39,14 @@ type AppUpsertResponseData struct {
 	AppId uint64 `json:"app_id"`
 }
 
-type AppChatRequest struct {
+type SessionChatRequest struct {
 	SessionId uint64 `json:"session_id"`
 	AppId     uint64 `json:"app_id"`
 	Content   string `json:"content"`
+}
+
+type SessionChatResponseData struct {
+	ChatId uint64 `json:"chat_id"`
 }
 
 type SessionCreateRequest struct {
