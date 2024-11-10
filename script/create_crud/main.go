@@ -42,6 +42,8 @@ type SessionQuery interface {
 	GetByUserID(userId uint64) ([]gen.T, error)
 	// SELECT * FROM @@table WHERE id = @id LIMIT 1
 	GetByID(id uint64) (gen.T, error)
+	// DELETE FROM @@table WHERE id = @id
+	DeleteByID(id uint64) error
 }
 
 type ChatHistoryQuery interface {
@@ -57,6 +59,8 @@ type ChatHistoryQuery interface {
 	// {{end}}
 	// session_id = @sessionId ORDER BY created_at LIMIT @offset, @limit
 	BatchGetRecentBySessionID(sessionId uint64, lastId uint64, offset int, limit int) ([]gen.T, error)
+	// DELETE FROM @@table WHERE session_id = @sessionId
+	DeleteBySessionID(sessionId uint64) error
 }
 
 func main() {

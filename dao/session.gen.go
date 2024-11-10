@@ -167,6 +167,7 @@ type ISessionDo interface {
 
 	GetByUserID(userId uint64) (result []model.Session, err error)
 	GetByID(id uint64) (result model.Session, err error)
+	DeleteByID(id uint64) (err error)
 }
 
 // SELECT * FROM @@table WHERE user_id = @userId ORDER BY created_at DESC
@@ -194,6 +195,21 @@ func (s sessionDo) GetByID(id uint64) (result model.Session, err error) {
 
 	var executeSQL *gorm.DB
 	executeSQL = s.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// DELETE FROM @@table WHERE id = @id
+func (s sessionDo) DeleteByID(id uint64) (err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, id)
+	generateSQL.WriteString("DELETE FROM session WHERE id = ? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = s.UnderlyingDB().Exec(generateSQL.String(), params...) // ignore_security_alert
 	err = executeSQL.Error
 
 	return

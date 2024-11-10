@@ -19,6 +19,7 @@ import (
 	"github.com/hankeyyh/chat-box-svr/zerror"
 )
 
+// TODO 分页
 func SessionList(req *http.Request) (interface{}, zerror.Zerror) {
 	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
 	if userId == 0 || err != nil {
@@ -77,6 +78,34 @@ func SessionUpdate(req *http.Request) (interface{}, zerror.Zerror) {
 		return nil, zerror.NewZError(-1, err.Error(), err)
 	}
 	return session, nil
+}
+
+func SessionDelete(req *http.Request) (interface{}, zerror.Zerror) {
+	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
+	if userId == 0 || err != nil {
+		return nil, zerror.NewZError(-1, "user-id is required", err)
+	}
+	var sessionDeleteReq SessionDeleteRequest
+	if err = json.NewDecoder(req.Body).Decode(&sessionDeleteReq); err != nil {
+		return nil, zerror.NewZError(-1, err.Error(), err)
+	}
+	// 检查session是否属于用户
+	session, err := dao.Session.GetByID(sessionDeleteReq.Id)
+	if err != nil {
+		return nil, zerror.NewZError(-1, err.Error(), err)
+	}
+	if session.UserId != userId {
+		return nil, zerror.NewZError(-1, "session not belongs to user", nil)
+	}
+	// 删除session
+	if err = dao.Session.DeleteByID(sessionDeleteReq.Id); err != nil {
+		return nil, zerror.NewZError(-1, err.Error(), err)
+	}
+	// 删除chat history
+	if err = dao.ChatHistory.DeleteBySessionID(sessionDeleteReq.Id); err != nil {
+		return nil, zerror.NewZError(-1, err.Error(), err)
+	}
+	return nil, nil
 }
 
 func SessionChatList(req *http.Request) (interface{}, zerror.Zerror) {

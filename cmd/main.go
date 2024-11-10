@@ -36,6 +36,7 @@ func main() {
 	http.HandleFunc("/session/list", logic.HandleGetFormRequest(logic.SessionList))
 	http.HandleFunc("/session/create", logic.HandlePostJsonRequest(logic.SessionCreate))
 	http.HandleFunc("/session/update", logic.HandlePostJsonRequest(logic.SessionUpdate))
+	http.HandleFunc("/session/delete", logic.HandlePostJsonRequest(logic.SessionDelete))
 	http.HandleFunc("/session/chat-list", logic.HandleGetFormRequest(logic.SessionChatList))
 	http.HandleFunc("/session/chat", logic.HandlePostJsonRequest(logic.SessionChat)) // user message
 	http.HandleFunc("/session/stream", logic.SessionStream)

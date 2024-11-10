@@ -185,6 +185,7 @@ type IChatHistoryDo interface {
 	GetByParentID(parentId uint64) (result []model.ChatHistory, err error)
 	GetAllBySessionID(sessionId uint64) (result []model.ChatHistory, err error)
 	BatchGetRecentBySessionID(sessionId uint64, lastId uint64, offset int, limit int) (result []model.ChatHistory, err error)
+	DeleteBySessionID(sessionId uint64) (err error)
 }
 
 // SELECT * FROM @@table WHERE id = @id LIMIT 1
@@ -255,6 +256,21 @@ func (c chatHistoryDo) BatchGetRecentBySessionID(sessionId uint64, lastId uint64
 
 	var executeSQL *gorm.DB
 	executeSQL = c.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// DELETE FROM @@table WHERE session_id = @sessionId
+func (c chatHistoryDo) DeleteBySessionID(sessionId uint64) (err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, sessionId)
+	generateSQL.WriteString("DELETE FROM chat_history WHERE session_id = ? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = c.UnderlyingDB().Exec(generateSQL.String(), params...) // ignore_security_alert
 	err = executeSQL.Error
 
 	return
