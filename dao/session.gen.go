@@ -169,13 +169,13 @@ type ISessionDo interface {
 	GetByID(id uint64) (result model.Session, err error)
 }
 
-// SELECT * FROM @@table WHERE user_id = @userId
+// SELECT * FROM @@table WHERE user_id = @userId ORDER BY created_at DESC
 func (s sessionDo) GetByUserID(userId uint64) (result []model.Session, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, userId)
-	generateSQL.WriteString("SELECT * FROM session WHERE user_id = ? ")
+	generateSQL.WriteString("SELECT * FROM session WHERE user_id = ? ORDER BY created_at DESC ")
 
 	var executeSQL *gorm.DB
 	executeSQL = s.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert

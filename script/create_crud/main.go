@@ -38,7 +38,7 @@ type AppQuery interface {
 }
 
 type SessionQuery interface {
-	// SELECT * FROM @@table WHERE user_id = @userId
+	// SELECT * FROM @@table WHERE user_id = @userId ORDER BY created_at DESC
 	GetByUserID(userId uint64) ([]gen.T, error)
 	// SELECT * FROM @@table WHERE id = @id LIMIT 1
 	GetByID(id uint64) (gen.T, error)

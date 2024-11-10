@@ -39,6 +39,8 @@ func newApp(db *gorm.DB, opts ...gen.DOOption) app {
 	_app.Prologue = field.NewString(tableName, "prologue")
 	_app.Prompt = field.NewString(tableName, "prompt")
 	_app.IsPublic = field.NewInt8(tableName, "is_public")
+	_app.ShowPrompt = field.NewInt8(tableName, "show_prompt")
+	_app.Icon = field.NewString(tableName, "icon")
 	_app.CreatedAt = field.NewTime(tableName, "created_at")
 	_app.UpdatedAt = field.NewTime(tableName, "updated_at")
 
@@ -62,6 +64,8 @@ type app struct {
 	Prologue        field.String
 	Prompt          field.String
 	IsPublic        field.Int8
+	ShowPrompt      field.Int8
+	Icon            field.String
 	CreatedAt       field.Time
 	UpdatedAt       field.Time
 
@@ -91,6 +95,8 @@ func (a *app) updateTableName(table string) *app {
 	a.Prologue = field.NewString(table, "prologue")
 	a.Prompt = field.NewString(table, "prompt")
 	a.IsPublic = field.NewInt8(table, "is_public")
+	a.ShowPrompt = field.NewInt8(table, "show_prompt")
+	a.Icon = field.NewString(table, "icon")
 	a.CreatedAt = field.NewTime(table, "created_at")
 	a.UpdatedAt = field.NewTime(table, "updated_at")
 
@@ -109,7 +115,7 @@ func (a *app) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (a *app) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 13)
+	a.fieldMap = make(map[string]field.Expr, 15)
 	a.fieldMap["id"] = a.Id
 	a.fieldMap["model_id"] = a.ModelId
 	a.fieldMap["name"] = a.Name
@@ -121,6 +127,8 @@ func (a *app) fillFieldMap() {
 	a.fieldMap["prologue"] = a.Prologue
 	a.fieldMap["prompt"] = a.Prompt
 	a.fieldMap["is_public"] = a.IsPublic
+	a.fieldMap["show_prompt"] = a.ShowPrompt
+	a.fieldMap["icon"] = a.Icon
 	a.fieldMap["created_at"] = a.CreatedAt
 	a.fieldMap["updated_at"] = a.UpdatedAt
 }
