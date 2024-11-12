@@ -232,6 +232,7 @@ func SessionStream(w http.ResponseWriter, req *http.Request) {
 		}
 		log.Infof("response: %+v", rsp)
 		w.Write(sseBuf.EncodeJson(rsp))
+		w.(http.Flusher).Flush()
 		if end {
 			break
 		}
