@@ -165,18 +165,20 @@ type ISessionDo interface {
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
 
-	GetByUserID(userId uint64) (result []model.Session, err error)
+	GetByUserID(userId uint64, offset int, limit int) (result []model.Session, err error)
 	GetByID(id uint64) (result model.Session, err error)
 	DeleteByID(id uint64) (err error)
 }
 
-// SELECT * FROM @@table WHERE user_id = @userId ORDER BY created_at DESC
-func (s sessionDo) GetByUserID(userId uint64) (result []model.Session, err error) {
+// SELECT * FROM @@table WHERE user_id = @userId ORDER BY created_at DESC LIMIT @offset, @limit
+func (s sessionDo) GetByUserID(userId uint64, offset int, limit int) (result []model.Session, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, userId)
-	generateSQL.WriteString("SELECT * FROM session WHERE user_id = ? ORDER BY created_at DESC ")
+	params = append(params, offset)
+	params = append(params, limit)
+	generateSQL.WriteString("SELECT * FROM session WHERE user_id = ? ORDER BY created_at DESC LIMIT ?, ? ")
 
 	var executeSQL *gorm.DB
 	executeSQL = s.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert

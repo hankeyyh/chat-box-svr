@@ -25,7 +25,16 @@ func SessionList(req *http.Request) (interface{}, zerror.Zerror) {
 	if userId == 0 || err != nil {
 		return nil, zerror.NewZError(-1, "user-id is required", err)
 	}
-	sessions, err := dao.Session.GetByUserID(userId)
+	page, err := strconv.Atoi(req.Form.Get("page"))
+	if err != nil {
+		return nil, zerror.NewZError(-1, err.Error(), err)
+	}
+	limit, err := strconv.Atoi(req.Form.Get("limit"))
+	if err != nil {
+		return nil, zerror.NewZError(-1, err.Error(), err)
+	}
+	
+	sessions, err := dao.Session.GetByUserID(userId, (page - 1)*limit, limit)
 	if err != nil {
 		return nil, zerror.NewZError(-1, err.Error(), err)
 	}
