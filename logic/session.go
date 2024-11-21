@@ -19,7 +19,6 @@ import (
 	"github.com/hankeyyh/chat-box-svr/zerror"
 )
 
-// TODO 分页
 func SessionList(req *http.Request) (interface{}, zerror.Zerror) {
 	userId, err := strconv.ParseUint(req.Header.Get("user-id"), 10, 64)
 	if userId == 0 || err != nil {
