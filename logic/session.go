@@ -32,8 +32,9 @@ func SessionList(req *http.Request) (interface{}, zerror.Zerror) {
 	if err != nil {
 		return nil, zerror.NewZError(-1, err.Error(), err)
 	}
+	name := req.Form.Get("name")
 	
-	sessions, err := dao.Session.GetByUserID(userId, (page - 1)*limit, limit)
+	sessions, err := dao.Session.GetByNameUserID(name, userId, (page - 1)*limit, limit)
 	if err != nil {
 		return nil, zerror.NewZError(-1, err.Error(), err)
 	}

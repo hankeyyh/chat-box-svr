@@ -38,8 +38,8 @@ type AppQuery interface {
 }
 
 type SessionQuery interface {
-	// SELECT * FROM @@table WHERE user_id = @userId ORDER BY created_at DESC LIMIT @offset, @limit
-	GetByUserID(userId uint64, offset, limit int) ([]gen.T, error)
+	// SELECT * FROM @@table WHERE name = @name and user_id = @userId ORDER BY created_at DESC LIMIT @offset, @limit
+	GetByNameUserID(name string, userId uint64, offset, limit int) ([]gen.T, error)
 	// SELECT * FROM @@table WHERE id = @id LIMIT 1
 	GetByID(id uint64) (gen.T, error)
 	// DELETE FROM @@table WHERE id = @id

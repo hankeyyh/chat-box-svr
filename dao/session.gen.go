@@ -11,10 +11,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
-
 	"gorm.io/gen"
 	"gorm.io/gen/field"
-
 	"gorm.io/plugin/dbresolver"
 
 	"github.com/hankeyyh/chat-box-svr/model"
@@ -165,20 +163,21 @@ type ISessionDo interface {
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
 
-	GetByUserID(userId uint64, offset int, limit int) (result []model.Session, err error)
+	GetByNameUserID(name string, userId uint64, offset int, limit int) (result []model.Session, err error)
 	GetByID(id uint64) (result model.Session, err error)
 	DeleteByID(id uint64) (err error)
 }
 
-// SELECT * FROM @@table WHERE user_id = @userId ORDER BY created_at DESC LIMIT @offset, @limit
-func (s sessionDo) GetByUserID(userId uint64, offset int, limit int) (result []model.Session, err error) {
+// SELECT * FROM @@table WHERE name = @name and user_id = @userId ORDER BY created_at DESC LIMIT @offset, @limit
+func (s sessionDo) GetByNameUserID(name string, userId uint64, offset int, limit int) (result []model.Session, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
+	params = append(params, name)
 	params = append(params, userId)
 	params = append(params, offset)
 	params = append(params, limit)
-	generateSQL.WriteString("SELECT * FROM session WHERE user_id = ? ORDER BY created_at DESC LIMIT ?, ? ")
+	generateSQL.WriteString("SELECT * FROM session WHERE name = ? and user_id = ? ORDER BY created_at DESC LIMIT ?, ? ")
 
 	var executeSQL *gorm.DB
 	executeSQL = s.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
