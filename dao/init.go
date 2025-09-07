@@ -2,6 +2,7 @@ package dao
 
 import (
 	"github.com/hankeyyh/chat-box-svr/conf"
+	"github.com/hankeyyh/chat-box-svr/util/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -13,7 +14,7 @@ func init() {
 	var err error
 	mysqlConf := conf.DefaultConf.MysqlConf
 	if db, err = gorm.Open(mysql.Open(mysqlConf.GetDsn())); err != nil {
-		panic(err)
+		log.Fatal("open db failed:", err)
 	}
 	sqldb, _ := db.DB()
 	sqldb.SetMaxIdleConns(mysqlConf.MaxIdleConn)

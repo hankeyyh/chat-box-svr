@@ -4,12 +4,19 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 var logpath = "log/service.log"
 var defaultLoger *log.Logger
 
 func init() {
+	// 确保日志目录存在
+	logDir := filepath.Dir(logpath)
+	if err := os.MkdirAll(logDir, 0755); err != nil {
+		log.Fatal("create log directory failed:", err)
+	}
+	
 	logFile, err := os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal("open log file failed")
