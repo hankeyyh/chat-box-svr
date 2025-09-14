@@ -2,6 +2,7 @@ package log
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -21,7 +22,18 @@ func init() {
 	if err != nil {
 		log.Fatal("open log file failed")
 	}
-	defaultLoger = log.New(logFile, "", log.LstdFlags|log.Lshortfile)
+	multiWriter := io.MultiWriter(logFile, os.Stdout)
+	defaultLoger = log.New(multiWriter, "", log.LstdFlags|log.Lshortfile)
+}
+
+func Debug(v ...interface{}) {
+	defaultLoger.SetPrefix("[Debug]")
+	defaultLoger.Output(2, fmt.Sprint(v...))
+}
+
+func Debugf(format string, v ...interface{}) {
+	defaultLoger.SetPrefix("[Debug]")
+	defaultLoger.Output(2, fmt.Sprintf(format, v...))
 }
 
 func Info(v ...interface{}) {
