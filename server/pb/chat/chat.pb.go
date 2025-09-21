@@ -24,6 +24,7 @@ const (
 type ChatRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	SessionId     uint64                 `protobuf:"varint,2,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -63,6 +64,13 @@ func (x *ChatRequest) GetText() string {
 		return x.Text
 	}
 	return ""
+}
+
+func (x *ChatRequest) GetSessionId() uint64 {
+	if x != nil {
+		return x.SessionId
+	}
+	return 0
 }
 
 type ChatResponse struct {
@@ -174,9 +182,11 @@ var File_chat_proto protoreflect.FileDescriptor
 const file_chat_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"chat.proto\x12\x04chat\"!\n" +
+	"chat.proto\x12\x04chat\"@\n" +
 	"\vChatRequest\x12\x12\n" +
-	"\x04text\x18\x01 \x01(\tR\x04text\"h\n" +
+	"\x04text\x18\x01 \x01(\tR\x04text\x12\x1d\n" +
+	"\n" +
+	"session_id\x18\x02 \x01(\x04R\tsessionId\"h\n" +
 	"\fChatResponse\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12*\n" +

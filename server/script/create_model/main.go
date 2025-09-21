@@ -19,8 +19,11 @@ func main() {
 	}
 	g.UseDB(gormdb)
 	g.ApplyBasic(
-		g.GenerateModel("session_v2"),
 		g.GenerateModel("app"),
+		g.GenerateModel("ai_model"),
+		g.GenerateModel("chat_history"),
+		g.GenerateModel("session"),
+		g.GenerateModel("session_v2"),
 	)
 	g.Execute()
 }

@@ -5,6 +5,7 @@ option go_package = "./chat";
 
 message ChatRequest {
     string text = 1;
+    uint64 session_id = 2;
 }
 
 message ChatResponse {

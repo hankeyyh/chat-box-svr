@@ -29,7 +29,7 @@ export default function Home() {
     setIsLoading(true);
     setStreamingText('');
     setUserQuestion(inputValue);
-    
+
     try {
       // 使用 Server-Sent Events 接收流式数据
       const response = await fetch('/api/chat', {
@@ -53,43 +53,44 @@ export default function Home() {
 
       while (true) {
         const { done, value } = await reader.read();
-        
+
         if (done) break;
 
         const chunk = decoder.decode(value);
         const lines = chunk.split('\n');
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              
-              if (data.type === 'connected') {
-                console.log('SSE 连接已建立');
-              } else if (data.type === 'data') {
-                const response = data.response;
-                
-                // 显示每次接收到的数据
-                if (response.data && response.data.text) {
-                  setStreamingText(prev => prev + response.data.text);
-                }
-              } else if (data.type === 'end') {
-                console.log('流式响应结束');
-                setToastMessage('响应完成');
-                setShowToast(true);
-                setTimeout(() => {
-                  setShowToast(false);
-                }, 2000);
-              } else if (data.type === 'error') {
-                throw new Error(data.error);
+          if (!line.startsWith('data: ')) {
+            continue;
+          }
+          try {
+            const data = JSON.parse(line.slice(6));
+
+            if (data.type === 'connected') {
+              console.log('SSE 连接已建立');
+            } else if (data.type === 'data') {
+              const response = data.response;
+
+              // 显示每次接收到的数据
+              if (response.data && response.data.text) {
+                setStreamingText(prev => prev + response.data.text);
               }
-            } catch (parseError) {
-              console.error('解析 SSE 数据失败:', parseError);
+            } else if (data.type === 'end') {
+              console.log('流式响应结束');
+              setToastMessage('响应完成');
+              setShowToast(true);
+              setTimeout(() => {
+                setShowToast(false);
+              }, 2000);
+            } else if (data.type === 'error') {
+              throw new Error(data.error);
             }
+          } catch (parseError) {
+            console.error('解析 SSE 数据失败:', parseError);
           }
         }
       }
-      
+
     } catch (error) {
       console.error('发送消息失败:', error);
       setToastMessage('发送消息失败，请检查网络连接');
@@ -105,21 +106,21 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white flex">
       <Toast show={showToast} message={toastMessage} />
-      
+
       <Sidebar />
-      
+
       <div className="flex-1 flex flex-col">
         <TopToolbar />
-        
-        <ChatMessage 
+
+        <ChatMessage
           userQuestion={userQuestion}
           streamingText={streamingText}
           isLoading={isLoading}
         />
-        
+
         <InteractionButtons show={!!streamingText && !isLoading} />
-        
-        <InputArea 
+
+        <InputArea
           inputValue={inputValue}
           isLoading={isLoading}
           onInputChange={setInputValue}

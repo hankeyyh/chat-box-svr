@@ -1,8 +1,9 @@
-package dao
+package model
 
 import (
+	"log"
+
 	"github.com/hankeyyh/chat-box-svr/conf"
-	"github.com/hankeyyh/chat-box-svr/util/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

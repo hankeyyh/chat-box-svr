@@ -16,39 +16,54 @@ import (
 )
 
 var (
-	Q         = new(Query)
-	App       *app
-	SessionV2 *sessionV2
+	Q           = new(Query)
+	AiModel     *aiModel
+	App         *app
+	ChatHistory *chatHistory
+	Session     *session
+	SessionV2   *sessionV2
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
+	AiModel = &Q.AiModel
 	App = &Q.App
+	ChatHistory = &Q.ChatHistory
+	Session = &Q.Session
 	SessionV2 = &Q.SessionV2
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:        db,
-		App:       newApp(db, opts...),
-		SessionV2: newSessionV2(db, opts...),
+		db:          db,
+		AiModel:     newAiModel(db, opts...),
+		App:         newApp(db, opts...),
+		ChatHistory: newChatHistory(db, opts...),
+		Session:     newSession(db, opts...),
+		SessionV2:   newSessionV2(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	App       app
-	SessionV2 sessionV2
+	AiModel     aiModel
+	App         app
+	ChatHistory chatHistory
+	Session     session
+	SessionV2   sessionV2
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:        db,
-		App:       q.App.clone(db),
-		SessionV2: q.SessionV2.clone(db),
+		db:          db,
+		AiModel:     q.AiModel.clone(db),
+		App:         q.App.clone(db),
+		ChatHistory: q.ChatHistory.clone(db),
+		Session:     q.Session.clone(db),
+		SessionV2:   q.SessionV2.clone(db),
 	}
 }
 
@@ -62,21 +77,30 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:        db,
-		App:       q.App.replaceDB(db),
-		SessionV2: q.SessionV2.replaceDB(db),
+		db:          db,
+		AiModel:     q.AiModel.replaceDB(db),
+		App:         q.App.replaceDB(db),
+		ChatHistory: q.ChatHistory.replaceDB(db),
+		Session:     q.Session.replaceDB(db),
+		SessionV2:   q.SessionV2.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	App       *appDo
-	SessionV2 *sessionV2Do
+	AiModel     *aiModelDo
+	App         *appDo
+	ChatHistory *chatHistoryDo
+	Session     *sessionDo
+	SessionV2   *sessionV2Do
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		App:       q.App.WithContext(ctx),
-		SessionV2: q.SessionV2.WithContext(ctx),
+		AiModel:     q.AiModel.WithContext(ctx),
+		App:         q.App.WithContext(ctx),
+		ChatHistory: q.ChatHistory.WithContext(ctx),
+		Session:     q.Session.WithContext(ctx),
+		SessionV2:   q.SessionV2.WithContext(ctx),
 	}
 }
 
