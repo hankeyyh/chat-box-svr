@@ -42,8 +42,11 @@ func (c *GeminiClient) buildContentConfig() *genai.GenerateContentConfig {
 			ThinkingBudget: &c.option.ThinkingBudget,
 		}
 	}
-	if c.option.Temperature > 0 {
-		result.Temperature = &c.option.Temperature
+	if c.option.Temperature != nil {
+		result.Temperature = c.option.Temperature
+	}
+	if c.option.MaxOutputTokens > 0 {
+		result.MaxOutputTokens = c.option.MaxOutputTokens
 	}
 	return result
 } 

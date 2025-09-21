@@ -12,11 +12,11 @@ const TableNameChatHistory = "chat_history"
 
 // ChatHistory mapped from table <chat_history>
 type ChatHistory struct {
-	ID        int64     `gorm:"column:id;primaryKey;autoIncrement:true;comment:主键" json:"id"`                        // 主键
-	ParentID  int64     `gorm:"column:parent_id;comment:父id" json:"parent_id"`                                       // 父id
-	UserID    int64     `gorm:"column:user_id;not null;comment:用户id" json:"user_id"`                                 // 用户id
-	SessionID int64     `gorm:"column:session_id;not null;comment:所属会话id" json:"session_id"`                         // 所属会话id
-	AppID     int64     `gorm:"column:app_id;not null;comment:应用id" json:"app_id"`                                   // 应用id
+	ID        uint64    `gorm:"column:id;primaryKey;autoIncrement:true;comment:主键" json:"id"`                        // 主键
+	ParentID  uint64    `gorm:"column:parent_id;comment:父id" json:"parent_id"`                                       // 父id
+	UserID    uint64    `gorm:"column:user_id;not null;comment:用户id" json:"user_id"`                                 // 用户id
+	SessionID uint64    `gorm:"column:session_id;not null;comment:所属会话id" json:"session_id"`                         // 所属会话id
+	AppID     uint64    `gorm:"column:app_id;not null;comment:应用id" json:"app_id"`                                   // 应用id
 	Sender    string    `gorm:"column:sender;not null;comment:发送者" json:"sender"`                                    // 发送者
 	ErrNo     int32     `gorm:"column:err_no;not null;comment:错误码" json:"err_no"`                                    // 错误码
 	Content   string    `gorm:"column:content;comment:内容" json:"content"`                                            // 内容

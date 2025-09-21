@@ -27,11 +27,11 @@ func newChatHistory(db *gorm.DB, opts ...gen.DOOption) chatHistory {
 
 	tableName := _chatHistory.chatHistoryDo.TableName()
 	_chatHistory.ALL = field.NewAsterisk(tableName)
-	_chatHistory.ID = field.NewInt64(tableName, "id")
-	_chatHistory.ParentID = field.NewInt64(tableName, "parent_id")
-	_chatHistory.UserID = field.NewInt64(tableName, "user_id")
-	_chatHistory.SessionID = field.NewInt64(tableName, "session_id")
-	_chatHistory.AppID = field.NewInt64(tableName, "app_id")
+	_chatHistory.ID = field.NewUint64(tableName, "id")
+	_chatHistory.ParentID = field.NewUint64(tableName, "parent_id")
+	_chatHistory.UserID = field.NewUint64(tableName, "user_id")
+	_chatHistory.SessionID = field.NewUint64(tableName, "session_id")
+	_chatHistory.AppID = field.NewUint64(tableName, "app_id")
 	_chatHistory.Sender = field.NewString(tableName, "sender")
 	_chatHistory.ErrNo = field.NewInt32(tableName, "err_no")
 	_chatHistory.Content = field.NewString(tableName, "content")
@@ -46,11 +46,11 @@ type chatHistory struct {
 	chatHistoryDo chatHistoryDo
 
 	ALL       field.Asterisk
-	ID        field.Int64  // 主键
-	ParentID  field.Int64  // 父id
-	UserID    field.Int64  // 用户id
-	SessionID field.Int64  // 所属会话id
-	AppID     field.Int64  // 应用id
+	ID        field.Uint64 // 主键
+	ParentID  field.Uint64 // 父id
+	UserID    field.Uint64 // 用户id
+	SessionID field.Uint64 // 所属会话id
+	AppID     field.Uint64 // 应用id
 	Sender    field.String // 发送者
 	ErrNo     field.Int32  // 错误码
 	Content   field.String // 内容
@@ -71,11 +71,11 @@ func (c chatHistory) As(alias string) *chatHistory {
 
 func (c *chatHistory) updateTableName(table string) *chatHistory {
 	c.ALL = field.NewAsterisk(table)
-	c.ID = field.NewInt64(table, "id")
-	c.ParentID = field.NewInt64(table, "parent_id")
-	c.UserID = field.NewInt64(table, "user_id")
-	c.SessionID = field.NewInt64(table, "session_id")
-	c.AppID = field.NewInt64(table, "app_id")
+	c.ID = field.NewUint64(table, "id")
+	c.ParentID = field.NewUint64(table, "parent_id")
+	c.UserID = field.NewUint64(table, "user_id")
+	c.SessionID = field.NewUint64(table, "session_id")
+	c.AppID = field.NewUint64(table, "app_id")
 	c.Sender = field.NewString(table, "sender")
 	c.ErrNo = field.NewInt32(table, "err_no")
 	c.Content = field.NewString(table, "content")

@@ -27,10 +27,10 @@ func newAiModel(db *gorm.DB, opts ...gen.DOOption) aiModel {
 
 	tableName := _aiModel.aiModelDo.TableName()
 	_aiModel.ALL = field.NewAsterisk(tableName)
-	_aiModel.ID = field.NewInt64(tableName, "id")
+	_aiModel.ID = field.NewUint64(tableName, "id")
 	_aiModel.Name = field.NewString(tableName, "name")
 	_aiModel.Enabled = field.NewInt32(tableName, "enabled")
-	_aiModel.MaxOutputTokens = field.NewInt64(tableName, "max_output_tokens")
+	_aiModel.MaxOutputTokens = field.NewUint64(tableName, "max_output_tokens")
 	_aiModel.CreatedAt = field.NewTime(tableName, "created_at")
 	_aiModel.UpdatedAt = field.NewTime(tableName, "updated_at")
 
@@ -43,10 +43,10 @@ type aiModel struct {
 	aiModelDo aiModelDo
 
 	ALL             field.Asterisk
-	ID              field.Int64  // 主键
+	ID              field.Uint64 // 主键
 	Name            field.String // 名称
 	Enabled         field.Int32  // 是否启用
-	MaxOutputTokens field.Int64  // 最大输出token
+	MaxOutputTokens field.Uint64 // 最大输出token
 	CreatedAt       field.Time   // 创建时间
 	UpdatedAt       field.Time   // 更新时间
 
@@ -65,10 +65,10 @@ func (a aiModel) As(alias string) *aiModel {
 
 func (a *aiModel) updateTableName(table string) *aiModel {
 	a.ALL = field.NewAsterisk(table)
-	a.ID = field.NewInt64(table, "id")
+	a.ID = field.NewUint64(table, "id")
 	a.Name = field.NewString(table, "name")
 	a.Enabled = field.NewInt32(table, "enabled")
-	a.MaxOutputTokens = field.NewInt64(table, "max_output_tokens")
+	a.MaxOutputTokens = field.NewUint64(table, "max_output_tokens")
 	a.CreatedAt = field.NewTime(table, "created_at")
 	a.UpdatedAt = field.NewTime(table, "updated_at")
 

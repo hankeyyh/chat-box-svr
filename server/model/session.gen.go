@@ -27,8 +27,8 @@ func newSession(db *gorm.DB, opts ...gen.DOOption) session {
 
 	tableName := _session.sessionDo.TableName()
 	_session.ALL = field.NewAsterisk(tableName)
-	_session.ID = field.NewInt64(tableName, "id")
-	_session.UserID = field.NewInt64(tableName, "user_id")
+	_session.ID = field.NewUint64(tableName, "id")
+	_session.UserID = field.NewUint64(tableName, "user_id")
 	_session.Name = field.NewString(tableName, "name")
 	_session.CreatedAt = field.NewTime(tableName, "created_at")
 	_session.UpdatedAt = field.NewTime(tableName, "updated_at")
@@ -42,8 +42,8 @@ type session struct {
 	sessionDo sessionDo
 
 	ALL       field.Asterisk
-	ID        field.Int64  // 主键
-	UserID    field.Int64  // 用户id
+	ID        field.Uint64 // 主键
+	UserID    field.Uint64 // 用户id
 	Name      field.String // 名称
 	CreatedAt field.Time   // 创建时间
 	UpdatedAt field.Time   // 更新时间
@@ -63,8 +63,8 @@ func (s session) As(alias string) *session {
 
 func (s *session) updateTableName(table string) *session {
 	s.ALL = field.NewAsterisk(table)
-	s.ID = field.NewInt64(table, "id")
-	s.UserID = field.NewInt64(table, "user_id")
+	s.ID = field.NewUint64(table, "id")
+	s.UserID = field.NewUint64(table, "user_id")
 	s.Name = field.NewString(table, "name")
 	s.CreatedAt = field.NewTime(table, "created_at")
 	s.UpdatedAt = field.NewTime(table, "updated_at")

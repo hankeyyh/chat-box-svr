@@ -12,10 +12,10 @@ const TableNameAiModel = "ai_model"
 
 // AiModel mapped from table <ai_model>
 type AiModel struct {
-	ID              int64     `gorm:"column:id;primaryKey;autoIncrement:true;comment:主键" json:"id"`                        // 主键
+	ID              uint64    `gorm:"column:id;primaryKey;autoIncrement:true;comment:主键" json:"id"`                        // 主键
 	Name            string    `gorm:"column:name;not null;comment:名称" json:"name"`                                         // 名称
 	Enabled         int32     `gorm:"column:enabled;not null;comment:是否启用" json:"enabled"`                                 // 是否启用
-	MaxOutputTokens int64     `gorm:"column:max_output_tokens;not null;comment:最大输出token" json:"max_output_tokens"`        // 最大输出token
+	MaxOutputTokens uint64    `gorm:"column:max_output_tokens;not null;comment:最大输出token" json:"max_output_tokens"`        // 最大输出token
 	CreatedAt       time.Time `gorm:"column:created_at;not null;default:CURRENT_TIMESTAMP;comment:创建时间" json:"created_at"` // 创建时间
 	UpdatedAt       time.Time `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP;comment:更新时间" json:"updated_at"` // 更新时间
 }

@@ -2,11 +2,11 @@ dep: ## get dependices
 	@echo "go dep..."
 	@go mod tidy
 
-model: dep # create model
+model: script/create_model/main.go # create model
 	@echo "create model..."
 	@go run script/create_model/main.go
 
-init_model: dep # init model
+init_model: script/init_model/main.go # init model
 	@echo "init model..."
 	@go run script/init_model/main.go --table_name=all
 

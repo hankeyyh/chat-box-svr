@@ -12,9 +12,9 @@ const TableNameSessionV2 = "session_v2"
 
 // SessionV2 mapped from table <session_v2>
 type SessionV2 struct {
-	ID        int64     `gorm:"column:id;primaryKey;autoIncrement:true;comment:主键" json:"id"`                        // 主键
-	UserID    int64     `gorm:"column:user_id;not null;comment:用户id" json:"user_id"`                                 // 用户id
-	AppID     int64     `gorm:"column:app_id;not null;comment:应用id" json:"app_id"`                                   // 应用id
+	ID        uint64    `gorm:"column:id;primaryKey;autoIncrement:true;comment:主键" json:"id"`                        // 主键
+	UserID    uint64    `gorm:"column:user_id;not null;comment:用户id" json:"user_id"`                                 // 用户id
+	AppID     uint64    `gorm:"column:app_id;not null;comment:应用id" json:"app_id"`                                   // 应用id
 	Name      string    `gorm:"column:name;not null;comment:名称" json:"name"`                                         // 名称
 	CreatedAt time.Time `gorm:"column:created_at;not null;default:CURRENT_TIMESTAMP;comment:创建时间" json:"created_at"` // 创建时间
 	UpdatedAt time.Time `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP;comment:更新时间" json:"updated_at"` // 更新时间

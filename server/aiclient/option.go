@@ -5,7 +5,8 @@ type Option struct {
 	BaseURL string
 	ThinkingBudget int32
 	Model string
-	Temperature float32
+	Temperature *float32
+	MaxOutputTokens int32
 }
 
 type OptionFunc func(o *Option)
@@ -36,6 +37,12 @@ func WithModel(model string) OptionFunc {
 
 func WithTemperature(temperature float32) OptionFunc {
 	return func(o *Option) {
-		o.Temperature = temperature
+		o.Temperature = &temperature
+	}
+}
+
+func WithMaxOutputTokens(maxOutputTokens int32) OptionFunc {
+	return func(o *Option) {
+		o.MaxOutputTokens = maxOutputTokens
 	}
 }

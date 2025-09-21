@@ -9,9 +9,9 @@ import (
 
 func main() {
 	g := gen.NewGenerator(gen.Config{
-		OutPath: "model",
+		OutPath:      "model",
 		ModelPkgPath: "model/table",
-		Mode: gen.WithDefaultQuery,
+		Mode:         gen.WithDefaultQuery,
 	})
 	gormdb, err := gorm.Open(mysql.Open(conf.DefaultConf.MysqlConf.GetDsn()))
 	if err != nil {
@@ -19,11 +19,31 @@ func main() {
 	}
 	g.UseDB(gormdb)
 	g.ApplyBasic(
-		g.GenerateModel("app"),
-		g.GenerateModel("ai_model"),
-		g.GenerateModel("chat_history"),
-		g.GenerateModel("session"),
-		g.GenerateModel("session_v2"),
+		g.GenerateModel("app", 
+			gen.FieldType("id", "uint64"),
+			gen.FieldType("model_id", "uint64"),
+			gen.FieldType("created_by", "uint64")),
+
+		g.GenerateModel("ai_model", 
+			gen.FieldType("id", "uint64"),
+			gen.FieldType("max_output_tokens", "uint64")),
+
+		g.GenerateModel("chat_history",
+			gen.FieldType("id", "uint64"),
+			gen.FieldType("parent_id", "uint64"),
+			gen.FieldType("user_id", "uint64"),
+			gen.FieldType("session_id", "uint64"),
+			gen.FieldType("app_id", "uint64")),
+			
+
+		g.GenerateModel("session", 
+			gen.FieldType("id", "uint64"),
+			gen.FieldType("user_id", "uint64")),
+
+		g.GenerateModel("session_v2",
+			gen.FieldType("id", "uint64"),
+			gen.FieldType("user_id", "uint64"),
+			gen.FieldType("app_id", "uint64")),
 	)
 	g.Execute()
 }

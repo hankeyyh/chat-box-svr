@@ -12,13 +12,13 @@ const TableNameApp = "app"
 
 // App mapped from table <app>
 type App struct {
-	ID              int64     `gorm:"column:id;primaryKey;autoIncrement:true;comment:主键" json:"id"`                        // 主键
-	ModelID         int64     `gorm:"column:model_id;not null;comment:模型id" json:"model_id"`                               // 模型id
+	ID              uint64    `gorm:"column:id;primaryKey;autoIncrement:true;comment:主键" json:"id"`                        // 主键
+	ModelID         uint64    `gorm:"column:model_id;not null;comment:模型id" json:"model_id"`                               // 模型id
 	Name            string    `gorm:"column:name;not null;comment:应用名称" json:"name"`                                       // 应用名称
 	Temperature     float64   `gorm:"column:temperature;not null;default:0.00;comment:temperature" json:"temperature"`     // temperature
 	TopP            float64   `gorm:"column:top_p;not null;default:0.00;comment:top_p" json:"top_p"`                       // top_p
 	MaxOutputTokens int32     `gorm:"column:max_output_tokens;not null;comment:最大输出token" json:"max_output_tokens"`        // 最大输出token
-	CreatedBy       int64     `gorm:"column:created_by;not null;comment:创建者uid,0:未定义,1:system" json:"created_by"`          // 创建者uid,0:未定义,1:system
+	CreatedBy       uint64    `gorm:"column:created_by;not null;comment:创建者uid,0:未定义,1:system" json:"created_by"`          // 创建者uid,0:未定义,1:system
 	Introduction    string    `gorm:"column:introduction;not null;comment:介绍" json:"introduction"`                         // 介绍
 	Prologue        string    `gorm:"column:prologue;not null;comment:开场白" json:"prologue"`                                // 开场白
 	Prompt          string    `gorm:"column:prompt;not null;comment:prompt" json:"prompt"`                                 // prompt

@@ -27,13 +27,13 @@ func newApp(db *gorm.DB, opts ...gen.DOOption) app {
 
 	tableName := _app.appDo.TableName()
 	_app.ALL = field.NewAsterisk(tableName)
-	_app.ID = field.NewInt64(tableName, "id")
-	_app.ModelID = field.NewInt64(tableName, "model_id")
+	_app.ID = field.NewUint64(tableName, "id")
+	_app.ModelID = field.NewUint64(tableName, "model_id")
 	_app.Name = field.NewString(tableName, "name")
 	_app.Temperature = field.NewFloat64(tableName, "temperature")
 	_app.TopP = field.NewFloat64(tableName, "top_p")
 	_app.MaxOutputTokens = field.NewInt32(tableName, "max_output_tokens")
-	_app.CreatedBy = field.NewInt64(tableName, "created_by")
+	_app.CreatedBy = field.NewUint64(tableName, "created_by")
 	_app.Introduction = field.NewString(tableName, "introduction")
 	_app.Prologue = field.NewString(tableName, "prologue")
 	_app.Prompt = field.NewString(tableName, "prompt")
@@ -52,13 +52,13 @@ type app struct {
 	appDo appDo
 
 	ALL             field.Asterisk
-	ID              field.Int64   // 主键
-	ModelID         field.Int64   // 模型id
+	ID              field.Uint64  // 主键
+	ModelID         field.Uint64  // 模型id
 	Name            field.String  // 应用名称
 	Temperature     field.Float64 // temperature
 	TopP            field.Float64 // top_p
 	MaxOutputTokens field.Int32   // 最大输出token
-	CreatedBy       field.Int64   // 创建者uid,0:未定义,1:system
+	CreatedBy       field.Uint64  // 创建者uid,0:未定义,1:system
 	Introduction    field.String  // 介绍
 	Prologue        field.String  // 开场白
 	Prompt          field.String  // prompt
@@ -83,13 +83,13 @@ func (a app) As(alias string) *app {
 
 func (a *app) updateTableName(table string) *app {
 	a.ALL = field.NewAsterisk(table)
-	a.ID = field.NewInt64(table, "id")
-	a.ModelID = field.NewInt64(table, "model_id")
+	a.ID = field.NewUint64(table, "id")
+	a.ModelID = field.NewUint64(table, "model_id")
 	a.Name = field.NewString(table, "name")
 	a.Temperature = field.NewFloat64(table, "temperature")
 	a.TopP = field.NewFloat64(table, "top_p")
 	a.MaxOutputTokens = field.NewInt32(table, "max_output_tokens")
-	a.CreatedBy = field.NewInt64(table, "created_by")
+	a.CreatedBy = field.NewUint64(table, "created_by")
 	a.Introduction = field.NewString(table, "introduction")
 	a.Prologue = field.NewString(table, "prologue")
 	a.Prompt = field.NewString(table, "prompt")

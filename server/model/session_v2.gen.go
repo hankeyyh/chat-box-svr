@@ -27,9 +27,9 @@ func newSessionV2(db *gorm.DB, opts ...gen.DOOption) sessionV2 {
 
 	tableName := _sessionV2.sessionV2Do.TableName()
 	_sessionV2.ALL = field.NewAsterisk(tableName)
-	_sessionV2.ID = field.NewInt64(tableName, "id")
-	_sessionV2.UserID = field.NewInt64(tableName, "user_id")
-	_sessionV2.AppID = field.NewInt64(tableName, "app_id")
+	_sessionV2.ID = field.NewUint64(tableName, "id")
+	_sessionV2.UserID = field.NewUint64(tableName, "user_id")
+	_sessionV2.AppID = field.NewUint64(tableName, "app_id")
 	_sessionV2.Name = field.NewString(tableName, "name")
 	_sessionV2.CreatedAt = field.NewTime(tableName, "created_at")
 	_sessionV2.UpdatedAt = field.NewTime(tableName, "updated_at")
@@ -43,9 +43,9 @@ type sessionV2 struct {
 	sessionV2Do sessionV2Do
 
 	ALL       field.Asterisk
-	ID        field.Int64  // 主键
-	UserID    field.Int64  // 用户id
-	AppID     field.Int64  // 应用id
+	ID        field.Uint64 // 主键
+	UserID    field.Uint64 // 用户id
+	AppID     field.Uint64 // 应用id
 	Name      field.String // 名称
 	CreatedAt field.Time   // 创建时间
 	UpdatedAt field.Time   // 更新时间
@@ -65,9 +65,9 @@ func (s sessionV2) As(alias string) *sessionV2 {
 
 func (s *sessionV2) updateTableName(table string) *sessionV2 {
 	s.ALL = field.NewAsterisk(table)
-	s.ID = field.NewInt64(table, "id")
-	s.UserID = field.NewInt64(table, "user_id")
-	s.AppID = field.NewInt64(table, "app_id")
+	s.ID = field.NewUint64(table, "id")
+	s.UserID = field.NewUint64(table, "user_id")
+	s.AppID = field.NewUint64(table, "app_id")
 	s.Name = field.NewString(table, "name")
 	s.CreatedAt = field.NewTime(table, "created_at")
 	s.UpdatedAt = field.NewTime(table, "updated_at")

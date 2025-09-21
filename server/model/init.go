@@ -24,3 +24,7 @@ func init() {
 	// set default model
 	SetDefault(db)
 }
+
+func GetDB() *gorm.DB {
+	return db
+}
